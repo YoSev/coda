@@ -1,0 +1,18 @@
+prepare:
+  steps:
+    - name: Install golang
+      command: nix-shell -p go
+    - name: Prepare
+      command: /nix/store/g29rrn8qqlg4yjqv543ryrkimr7fk43h-go-1.24.1/bin/go mod tidy
+    - name: Build
+      command: GOOS=linux GOARCH=amd64
+        /nix/store/g29rrn8qqlg4yjqv543ryrkimr7fk43h-go-1.24.1/bin/go build -o
+        ./_bin/coda-linux-amd64 .
+test:
+  steps:
+    - name: Test
+      command: /nix/store/g29rrn8qqlg4yjqv543ryrkimr7fk43h-go-1.24.1/bin/go test ./...
+run:
+  steps:
+    - name: Run
+      command: ./_bin/coda-linux-amd64 server -a c2V2OnNldg==
