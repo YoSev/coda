@@ -1,0 +1,129 @@
+coda:
+  debug: true
+  strict: false
+store:
+  username: John Doe The Greatest
+  url: https://api.ipify.org?format=json
+  file:
+    source: "/Users/sev/work/code/go/src/github.com/yosev/coda/test.coda.json"
+  preferences:
+    notifications: true
+operations:
+- action: http.request
+  params:
+    url: "${store.url}"
+    headers:
+      X-User-Agent: coda
+      Content-Type: application/json
+    body:
+    - foo
+    - bar
+    method: GET
+  onFail:
+  - action: http.request
+    params:
+      url: "${store.url}"
+      headers:
+        X-User-Agent: coda
+        Content-Type: application/json
+      body:
+      - foo
+      - bar
+      method: GET
+    store: apiResponse
+  store: apiResponse
+- action: string.kebap
+  params:
+    value: "${store.username}"
+  store: username
+- action: string.upper
+  params:
+    value: "${store.username}"
+  store: username
+- action: file.size
+  params:
+    source: "${store.file.source}"
+  store: filesize
+- action: file.modified
+  params:
+    source: "${store.file.source}"
+  store: modtime
+- action: file.copy
+  params:
+    source: "${store.file.source}"
+    destination: "${store.file.source}.copy"
+  store: destination
+- action: time.sleep
+  params:
+    value: 100
+- action: file.move
+  params:
+    source: "${store.file.source}.copy"
+    destination: "${store.file.source}.copy.again"
+  store: destination
+- action: time.sleep
+  params:
+    value: 100
+- action: file.read
+  params:
+    source: "${store.file.source}.copy.again"
+  store: fileContent
+- action: file.delete
+  params:
+    source: "${store.file.source}.copy.again"
+- action: file.delete
+  params:
+    source: "${store.file.source}.write"
+- action: time.datetime
+  params:
+    value: '2006-01-02 15:04:05'
+  store: dt
+- action: time.timestamp.micro
+  store: ts
+- action: hash.sha512
+  params:
+    value: "${store.ts | string}"
+  store: tsHashed
+- action: hash.base64.encode
+  params:
+    value: "${store.tsHashed}"
+  store: tsHashed
+- action: io.env.get
+  params:
+    value: ZSH
+  store: env
+- action: string.split
+  params:
+    value: "${store.env}"
+    delimiter: "/"
+  store: envSplitted
+- action: string.join
+  params:
+    value: "${store.envSplitted}"
+    delimiter: "/"
+  store: envJoined
+- action: os.name
+  store: os
+- action: string.reverse
+  params:
+    value: "${store.os}"
+  store: osReversed
+- action: os.arch
+  store: arch
+- action: io.stdout
+  params:
+    value: |-
+      ip: ${store.apiResponse.body.ip | split:. | join:-}
+      username: ${store.username}
+      notifications: ${store.preferences.notifications}
+      filesize: ${store.filesize}b
+      modtime: ${store.modtime}
+      datetime: ${store.dt}
+      timestamp: ${store.ts}
+      hashedTimestamp: ${store.tsHashed}
+      env: ${store.env}
+      envSplitted: ${store.envSplitted}
+      envJoined: ${store.envSplitted | join:/}
+      os: ${store.os}
+      osReversed: ${store.osReversed}
+      arch: ${store.arch | lower | upper}
