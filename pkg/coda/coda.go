@@ -3,7 +3,7 @@ package coda
 import (
 	"encoding/json"
 
-	"github.com/yosev/coda/internal/coda/fn"
+	"github.com/yosev/coda/pkg/coda/fn"
 	"sigs.k8s.io/yaml"
 )
 

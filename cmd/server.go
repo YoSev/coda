@@ -9,7 +9,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
-	"github.com/yosev/coda/internal/coda"
+	"github.com/yosev/coda/pkg/coda"
 	"sigs.k8s.io/yaml"
 )
 

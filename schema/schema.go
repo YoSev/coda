@@ -4,7 +4,7 @@ import (
 	_ "embed"
 	"encoding/json"
 
-	"github.com/yosev/coda/internal/coda"
+	"github.com/yosev/coda/pkg/coda"
 )
 
 //go:embed coda.schema.json

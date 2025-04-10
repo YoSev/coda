@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/yosev/coda/internal/coda"
+	"github.com/yosev/coda/pkg/coda"
 )
 
 var yamlCmd = &cobra.Command{

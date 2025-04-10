@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/yosev/coda/internal/coda"
+	"github.com/yosev/coda/pkg/coda"
 )
 
 var docsCmd = &cobra.Command{
