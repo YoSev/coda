@@ -72,7 +72,7 @@ func serverFn(cmd *cobra.Command, args []string) {
 
 	// setup default route
 	router.GET("/", func(c *gin.Context) {
-		c.AbortWithStatus(204)
+		c.AbortWithStatus(200)
 	})
 
 	// setup json handler
