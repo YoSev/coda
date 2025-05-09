@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/yosev/coda/pkg/coda"
@@ -51,6 +52,12 @@ func yamlF(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 	script := string(f)
+
+	// remove shebang if present
+	if strings.HasPrefix(script, "#") {
+		script = strings.SplitN(script, "\n", 2)[1]
+	}
+
 	executeY(script)
 }
 

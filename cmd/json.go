@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/yosev/coda/pkg/coda"
@@ -50,7 +51,14 @@ func jsonF(cmd *cobra.Command, args []string) {
 		fmt.Printf("failed to read json file: %v\n", err)
 		os.Exit(1)
 	}
+
 	script := string(f)
+
+	// remove shebang if present
+	if strings.HasPrefix(script, "#") {
+		script = strings.SplitN(script, "\n", 2)[1]
+	}
+
 	executeJ(script)
 }
 

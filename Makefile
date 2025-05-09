@@ -6,7 +6,7 @@ build+darwin+arm64:
 build: build+darwin+arm64
 
 install+local: build+darwin+arm64
-	sudo cp _bin/coda-darwin-arm64 /usr/local/bin/coda
+	sudo cp _bin/coda-darwin-arm64 ~/code/go/bin/coda
 
 test:
 	go test ./...
