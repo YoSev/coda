@@ -1,13 +1,11 @@
 prepare:
   steps:
     - name: Install golang
-      command: nix-shell -p go
+      command: nix-env -iA nixpkgs.go
     - name: Prepare
-      command: /nix/store/g29rrn8qqlg4yjqv543ryrkimr7fk43h-go-1.24.1/bin/go mod tidy
+      command: go mod tidy
     - name: Build
-      command: GOOS=linux GOARCH=amd64
-        /nix/store/g29rrn8qqlg4yjqv543ryrkimr7fk43h-go-1.24.1/bin/go build -o
-        ./_bin/coda-linux-amd64 .
+      command: GOOS=linux GOARCH=amd64 go build -o ./_bin/coda-linux-amd64 .
 test:
   steps:
     - name: Test
