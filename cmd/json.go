@@ -55,7 +55,7 @@ func jsonF(cmd *cobra.Command, args []string) {
 	script := string(f)
 
 	// remove shebang if present
-	if strings.HasPrefix(script, "#") {
+	if strings.HasPrefix(script, "#!") {
 		script = strings.SplitN(script, "\n", 2)[1]
 	}
 

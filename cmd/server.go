@@ -38,8 +38,6 @@ func serverFn(cmd *cobra.Command, args []string) {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
-	coda.New().Schema() // trigger initial schema generation
-
 	// setup cors
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},

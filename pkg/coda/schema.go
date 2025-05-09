@@ -73,6 +73,10 @@ type SchemaOperationParams struct {
 	Const string   `json:"const,omitempty"`
 }
 
+func init() {
+	new().Schema()
+}
+
 var schema = ""
 
 // GenerateSchema loads and populates the JSON schema
