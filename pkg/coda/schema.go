@@ -73,16 +73,21 @@ type SchemaOperationParams struct {
 	Const string   `json:"const,omitempty"`
 }
 
+var schema = ""
+
 // GenerateSchema loads and populates the JSON schema
 func (c *Coda) Schema() string {
-	err := json.Unmarshal([]byte(jsonSchemaRaw), jsonSchema)
-	if err != nil {
-		panic("Failed to parse JSON schema: " + err.Error())
-	}
-	jsonSchema.populateSchema(version.VERSION)
+	if schema == "" {
+		err := json.Unmarshal([]byte(jsonSchemaRaw), jsonSchema)
+		if err != nil {
+			panic("Failed to parse JSON schema: " + err.Error())
+		}
+		jsonSchema.populateSchema(version.VERSION)
 
-	b, _ := json.Marshal(jsonSchema)
-	return string(b)
+		b, _ := json.Marshal(jsonSchema)
+		schema = string(b)
+	}
+	return schema
 }
 
 func (s *Schema) populateSchema(version string) {

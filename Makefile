@@ -11,6 +11,9 @@ install+local: build+darwin+arm64
 test:
 	go test ./...
 
+dev+server:
+	go run -race main.go server
+
 dev+json:
 	go run main.go jj test.coda.json
 
