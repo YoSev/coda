@@ -52,7 +52,7 @@ func serverFn(cmd *cobra.Command, args []string) {
 	if basicAuth != nil && *basicAuth != "" {
 		router.Use(func(c *gin.Context) {
 			// do not apply authorization for GET requests (eg. for health check)
-			if c.Request.Method == "GET" {
+			if c.Request.Method == "GET" && c.Request.URL.Path == "/" {
 				c.Next()
 				return
 			}
