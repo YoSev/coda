@@ -2,8 +2,13 @@ build+darwin+arm64:
 	mkdir -p _bin
 	GOOS=darwin GOARCH=arm64 go build -o _bin/coda-darwin-arm64 main.go
 	chmod 755 _bin/coda-darwin-arm64
+build+linux+amd64:
+	mkdir -p _bin
+	GOOS=linux GOARCH=amd64 go build -o _bin/coda-linux-amd64 main.go
+	chmod 755 _bin/coda-linux-amd64
 
 build: build+darwin+arm64
+build+linux: build+linux+amd64
 
 install+local: build+darwin+arm64
 	sudo cp _bin/coda-darwin-arm64 ~/code/go/bin/coda
