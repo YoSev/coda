@@ -2,17 +2,14 @@ package cmd
 
 import (
 	"fmt"
-	"io"
-	"os"
 	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
-	"github.com/yosev/coda/pkg/coda"
+	"github.com/yosev/coda/internal/controller"
 	"github.com/yosev/coda/pkg/metrics"
-	"sigs.k8s.io/yaml"
 )
 
 var serverCmd = &cobra.Command{
@@ -75,97 +72,22 @@ func serverFn(cmd *cobra.Command, args []string) {
 		c.AbortWithStatus(200)
 	})
 
-	// setup json handler
+	// setup json file handler
 	router.POST("/coda/j", func(c *gin.Context) {
-		start := time.Now()
-		if c.Request.Header.Get("Content-Type") != "application/json" {
-			c.JSON(400, gin.H{"error": "Content-Type must be application/json"})
-			return
-		}
-
-		b, err := io.ReadAll(c.Request.Body)
-		if err != nil {
-			c.JSON(400, gin.H{"error": "failed to read request body: " + err.Error()})
-			fmt.Fprintf(os.Stderr, "failed to read request body: %v\n", err)
-			return
-		}
-
-		codaInstance := coda.New()
-		err = applyBlacklist(codaInstance)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "failed to apply blacklist: %v\n", err)
-			os.Exit(1)
-		}
-		_, err = codaInstance.FromJson(string(b))
-		if err != nil {
-			c.JSON(400, gin.H{"error": "failed to initiate coda from json: " + err.Error()})
-			fmt.Fprintf(os.Stderr, "failed to initiate coda from json: %v\n", err)
-			return
-		}
-
-		err = codaInstance.Run()
-		if err != nil {
-			c.JSON(400, gin.H{"error": "failed to run coda: " + err.Error()})
-			fmt.Fprintf(os.Stderr, "failed to run coda: %v\n", err)
-			return
-		}
-
-		fmt.Printf("processed coda request with %d operations after %s\n", len(codaInstance.Operations), time.Since(start))
-		// remove coda and operations from the response as they are not needed
-		codaInstance.Coda = nil
-		codaInstance.Operations = nil
-		c.JSON(200, codaInstance)
+		controller.HandleJson(c, blacklist, nil)
+	})
+	// setup experimental json handler
+	router.POST("/coda/jj/*url", func(c *gin.Context) {
+		controller.HandleJsonFile(c, blacklist)
 	})
 
 	// setup yaml handler
 	router.POST("/coda/y", func(c *gin.Context) {
-		start := time.Now()
-		if c.Request.Header.Get("Content-Type") != "text/yaml" &&
-			c.Request.Header.Get("Content-Type") != "application/x-yaml" &&
-			c.Request.Header.Get("Content-Type") != "text/x-yaml" {
-			c.JSON(400, gin.H{"error": "Content-Type must be text/yaml, application/x-yaml, or text/x-yaml"})
-			return
-		}
-
-		b, err := io.ReadAll(c.Request.Body)
-		if err != nil {
-			c.JSON(400, gin.H{"error": "failed to read request body: " + err.Error()})
-			fmt.Fprintf(os.Stderr, "failed to read request body: %v\n", err)
-			return
-		}
-
-		codaInstance := coda.New()
-		err = applyBlacklist(codaInstance)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "failed to apply blacklist: %v\n", err)
-			os.Exit(1)
-		}
-		_, err = codaInstance.FromYaml(string(b))
-		if err != nil {
-			c.JSON(400, gin.H{"error": "failed to initiate coda from yaml: " + err.Error()})
-			fmt.Fprintf(os.Stderr, "failed to initiate coda from yaml: %v\n", err)
-			return
-		}
-
-		err = codaInstance.Run()
-		if err != nil {
-			c.JSON(400, gin.H{"error": "failed to run coda: " + err.Error()})
-			fmt.Fprintf(os.Stderr, "failed to run coda: %v\n", err)
-			return
-		}
-
-		fmt.Printf("processed coda request with %d operations after %s\n", len(codaInstance.Operations), time.Since(start))
-		// remove coda and operations from the response as they are not needed
-		codaInstance.Coda = nil
-		codaInstance.Operations = nil
-		y, err := yaml.Marshal(codaInstance)
-		if err != nil {
-			c.JSON(500, gin.H{"error": "failed to marshal coda to yaml: " + err.Error()})
-			fmt.Fprintf(os.Stderr, "failed to marshal coda to yaml: %v\n", err)
-			return
-		}
-		c.Header("Content-Type", "text/yaml")
-		c.String(200, string(y))
+		controller.HandleYaml(c, blacklist, nil)
+	})
+	// setup experimental yaml file handler
+	router.POST("/coda/yy/*url", func(c *gin.Context) {
+		controller.HandleYamlFile(c, blacklist)
 	})
 
 	// setup metrics
@@ -177,35 +99,4 @@ func serverFn(cmd *cobra.Command, args []string) {
 
 	fmt.Printf("coda server started on port %d\n", *port)
 	router.Run(fmt.Sprintf(":%d", *port))
-}
-
-func applyBlacklist(codaInstance *coda.Coda) error {
-	if len(*blacklist) == 0 {
-		return nil
-	}
-
-	for _, category := range *blacklist {
-		switch category {
-		case "file":
-			codaInstance.Blacklist = append(codaInstance.Blacklist, coda.OperationCategoryFile)
-		case "string":
-			codaInstance.Blacklist = append(codaInstance.Blacklist, coda.OperationCategoryString)
-		case "time":
-			codaInstance.Blacklist = append(codaInstance.Blacklist, coda.OperationCategoryTime)
-		case "io":
-			codaInstance.Blacklist = append(codaInstance.Blacklist, coda.OperationCategoryIO)
-		case "os":
-			codaInstance.Blacklist = append(codaInstance.Blacklist, coda.OperationCategoryOS)
-		case "http":
-			codaInstance.Blacklist = append(codaInstance.Blacklist, coda.OperationCategoryHTTP)
-		case "hash":
-			codaInstance.Blacklist = append(codaInstance.Blacklist, coda.OperationCategoryHash)
-		case "math":
-			codaInstance.Blacklist = append(codaInstance.Blacklist, coda.OperationCategoryMath)
-		default:
-			return fmt.Errorf("unknown blacklist category: %s", category)
-		}
-	}
-
-	return nil
 }

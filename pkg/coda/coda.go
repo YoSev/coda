@@ -3,6 +3,7 @@ package coda
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/xeipuuv/gojsonschema"
 	"github.com/yosev/coda/pkg/coda/fn"
@@ -64,6 +65,10 @@ func (c *Coda) FromJson(j string) (*Coda, error) {
 
 // NewFromYaml creates a new Coda instance from a YAML string
 func (c *Coda) FromYaml(y string) (*Coda, error) {
+	if strings.HasPrefix(y, "{") || strings.HasPrefix(y, "[") {
+		return nil, fmt.Errorf("input is not a valid YAML string")
+	}
+
 	// TODO add schema validation for yaml
 	c.source = SOURCE_YAML // set source to JSON
 	err := yaml.Unmarshal([]byte(y), c)

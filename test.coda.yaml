@@ -4,7 +4,7 @@ store:
   username: John Doe The Greatest
   url: https://api.ipify.org?format=json
   file:
-    source: "/Users/sev/work/code/go/src/github.com/yosev/coda/test.coda.json"
+    source: "./test.coda.yaml"
   preferences:
     notifications: true
 operations:
