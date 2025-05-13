@@ -111,6 +111,9 @@ func serverFn(cmd *cobra.Command, args []string) {
 		}
 
 		fmt.Printf("processed coda request with %d operations after %s\n", len(codaInstance.Operations), time.Since(start))
+		// remove coda and operations from the response as they are not needed
+		codaInstance.Coda = nil
+		codaInstance.Operations = nil
 		c.JSON(200, codaInstance)
 	})
 
@@ -152,6 +155,9 @@ func serverFn(cmd *cobra.Command, args []string) {
 		}
 
 		fmt.Printf("processed coda request with %d operations after %s\n", len(codaInstance.Operations), time.Since(start))
+		// remove coda and operations from the response as they are not needed
+		codaInstance.Coda = nil
+		codaInstance.Operations = nil
 		y, err := yaml.Marshal(codaInstance)
 		if err != nil {
 			c.JSON(500, gin.H{"error": "failed to marshal coda to yaml: " + err.Error()})

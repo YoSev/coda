@@ -31,10 +31,10 @@ const (
 
 // Coda is the main struct for the coda engine
 type Coda struct {
-	Coda       CodaSettings               `json:"coda,omitempty" yaml:"coda,omitempty"`   // optional
-	Logs       []string                   `json:"logs,omitempty" yaml:"logs,omitempty"`   // optional
-	Store      map[string]json.RawMessage `json:"store,omitempty" yaml:"store,omitempty"` // optional
-	Operations []Operation                `json:"operations" yaml:"operations"`           // mandatory
+	Coda       *CodaSettings              `json:"coda,omitempty" yaml:"coda,omitempty"` // optional
+	Logs       []string                   `json:"logs,omitempty" yaml:"logs,omitempty"` // optional
+	Store      map[string]json.RawMessage `json:"store" yaml:"store"`
+	Operations []Operation                `json:"operations,omitempty" yaml:"operations,omitempty"` // mandatory
 
 	fn        *fn.Fn
 	source    source
@@ -78,7 +78,7 @@ func (c *Coda) FromYaml(y string) (*Coda, error) {
 // new creates a new Coda instance with default settings
 func new() *Coda {
 	return &Coda{
-		Coda: CodaSettings{
+		Coda: &CodaSettings{
 			Debug: false,
 		},
 		Logs:       []string{},
