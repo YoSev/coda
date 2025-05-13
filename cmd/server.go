@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/yosev/coda/internal/controller"
 	"github.com/yosev/coda/pkg/metrics"
+	"github.com/yosev/coda/pkg/version"
 )
 
 var serverCmd = &cobra.Command{
@@ -44,6 +45,12 @@ func serverFn(cmd *cobra.Command, args []string) {
 		AllowCredentials: false,
 		MaxAge:           86400 * time.Second,
 	}))
+
+	// setup version headers
+	router.Use(func(c *gin.Context) {
+		c.Writer.Header().Set("x-coda-version", "coda/v"+version.VERSION)
+		c.Next()
+	})
 
 	// setup basicAuth
 	if basicAuth != nil && *basicAuth != "" {
