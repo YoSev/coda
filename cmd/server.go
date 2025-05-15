@@ -43,7 +43,7 @@ func serverFn(cmd *cobra.Command, args []string) {
 		AllowMethods:     []string{"GET", "POST"},
 		AllowHeaders:     []string{"*"},
 		ExposeHeaders:    []string{"*"},
-		AllowCredentials: false,
+		AllowCredentials: true,
 		MaxAge:           86400 * time.Second,
 	}))
 

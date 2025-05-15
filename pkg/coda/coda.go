@@ -12,8 +12,13 @@ import (
 
 // CodaSettings contains the settings for the coda engine
 type CodaSettings struct {
-	Logs     bool `json:"logs" yaml:"logs"`         // optional
-	Stats    bool `json:"stats" yaml:"stats"`       // optional
+	// Return logs of the coda run
+	Logs bool `json:"logs" yaml:"logs"` // optional
+
+	// Return runtime stats of the coda run
+	Stats bool `json:"stats" yaml:"stats"` // optional
+
+	// Return the coda settings and operations
 	Extended bool `json:"extended" yaml:"extended"` // optional
 }
 
@@ -42,7 +47,7 @@ type Coda struct {
 
 	fn        *fn.Fn
 	source    source
-	Blacklist []OperationCategory `json:"-" yaml:"-"`
+	blacklist []OperationCategory `json:"-" yaml:"-"`
 }
 
 func New() *Coda {
@@ -53,8 +58,8 @@ func (c *Coda) Run() error {
 	return c.run()
 }
 
-// CleanUp the Coda instance by applying the coda.Coda settings
-func (c *Coda) CleanUp() {
+// Finish the Coda instance by applying the coda.Coda settings
+func (c *Coda) Finish() {
 	if !c.Coda.Stats {
 		c.Stats = nil
 	}
@@ -65,6 +70,11 @@ func (c *Coda) CleanUp() {
 		c.Coda = nil
 		c.Operations = nil
 	}
+}
+
+// Blacklist categories of operations for this run
+func (c *Coda) Blacklist(category OperationCategory) {
+	c.blacklist = append(c.blacklist, category)
 }
 
 // NewFromJson creates a new Coda instance from a JSON string
@@ -113,7 +123,7 @@ func new() *Coda {
 		Store:      make(map[string]json.RawMessage),
 		Operations: []Operation{},
 
-		Blacklist: []OperationCategory{},
+		blacklist: []OperationCategory{},
 		fn:        fn.New(),
 	}
 	c.Stats = c.newStats()

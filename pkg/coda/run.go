@@ -14,7 +14,7 @@ func (c *Coda) run() error {
 	defer func() {
 		since := time.Since(start)
 		c.debug(fmt.Sprintf("executed %d operations after %s", ops, since))
-		c.Stats.CodaRuntimeTotalms += float64(since.Milliseconds())
+		c.Stats.CodaRuntimeTotalMs += float64(since.Milliseconds())
 	}()
 
 	if err != nil {
@@ -163,10 +163,10 @@ func (c *Coda) storeNestedJSONValue(path string, value json.RawMessage) error {
 }
 
 func (c *Coda) isBlacklisted(category OperationCategory) bool {
-	if len(c.Blacklist) == 0 {
+	if len(c.blacklist) == 0 {
 		return false
 	}
-	for _, bl := range c.Blacklist {
+	for _, bl := range c.blacklist {
 		if bl == category {
 			return true
 		}

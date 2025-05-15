@@ -72,7 +72,7 @@ func HandleJson(c *gin.Context, blacklist *[]string, payload []byte) {
 	}
 
 	fmt.Printf("processed coda request with %d operations after %s\n", len(codaInstance.Operations), time.Since(start))
-	codaInstance.CleanUp()
+	codaInstance.Finish()
 	c.JSON(200, codaInstance)
 }
 

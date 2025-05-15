@@ -1,7 +1,7 @@
 package coda
 
 type CodaStats struct {
-	CodaRuntimeTotalms float64 `json:"coda_runtime_total_ms" yaml:"coda_runtime_total_ms"`
+	CodaRuntimeTotalMs float64 `json:"coda_runtime_total_ms" yaml:"coda_runtime_total_ms"`
 
 	OperationsRuntimeTotalMs   float64 `json:"operations_runtime_total_ms" yaml:"operations_runtime_total_ms"`
 	OperationsTotal            float64 `json:"operations_total" yaml:"operations_total"`
@@ -16,7 +16,7 @@ type CodaStats struct {
 
 func (c *Coda) newStats() *CodaStats {
 	return &CodaStats{
-		CodaRuntimeTotalms: 0,
+		CodaRuntimeTotalMs: 0,
 
 		OperationsRuntimeTotalMs:   0,
 		OperationsTotal:            0,

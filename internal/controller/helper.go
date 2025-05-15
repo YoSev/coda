@@ -21,7 +21,7 @@ func addStatsToMetrics(c *coda.Coda, success bool) {
 		metrics.Inc("coda_failed_total")
 	}
 
-	metrics.IncValue("coda_runtime_total", c.Stats.CodaRuntimeTotalms)
+	metrics.IncValue("coda_runtime_total", c.Stats.CodaRuntimeTotalMs)
 	metrics.IncValue("operations_runtime_total", c.Stats.OperationsRuntimeTotalMs)
 	metrics.IncValue("operations_total", c.Stats.OperationsTotal)
 	metrics.IncValue("operations_successful_total", c.Stats.OperationsSuccessfulTotal)
@@ -76,7 +76,7 @@ func downloadFile(c *gin.Context) []byte {
 	return payload
 }
 
-func applyBlacklist(blacklist *[]string, codaInstance *coda.Coda) error {
+func applyBlacklist(blacklist *[]string, c *coda.Coda) error {
 	if len(*blacklist) == 0 {
 		return nil
 	}
@@ -84,21 +84,21 @@ func applyBlacklist(blacklist *[]string, codaInstance *coda.Coda) error {
 	for _, category := range *blacklist {
 		switch category {
 		case "file":
-			codaInstance.Blacklist = append(codaInstance.Blacklist, coda.OperationCategoryFile)
+			c.Blacklist(coda.OperationCategoryFile)
 		case "string":
-			codaInstance.Blacklist = append(codaInstance.Blacklist, coda.OperationCategoryString)
+			c.Blacklist(coda.OperationCategoryString)
 		case "time":
-			codaInstance.Blacklist = append(codaInstance.Blacklist, coda.OperationCategoryTime)
+			c.Blacklist(coda.OperationCategoryTime)
 		case "io":
-			codaInstance.Blacklist = append(codaInstance.Blacklist, coda.OperationCategoryIO)
+			c.Blacklist(coda.OperationCategoryIO)
 		case "os":
-			codaInstance.Blacklist = append(codaInstance.Blacklist, coda.OperationCategoryOS)
+			c.Blacklist(coda.OperationCategoryOS)
 		case "http":
-			codaInstance.Blacklist = append(codaInstance.Blacklist, coda.OperationCategoryHTTP)
+			c.Blacklist(coda.OperationCategoryHTTP)
 		case "hash":
-			codaInstance.Blacklist = append(codaInstance.Blacklist, coda.OperationCategoryHash)
+			c.Blacklist(coda.OperationCategoryHash)
 		case "math":
-			codaInstance.Blacklist = append(codaInstance.Blacklist, coda.OperationCategoryMath)
+			c.Blacklist(coda.OperationCategoryMath)
 		default:
 			return fmt.Errorf("unknown blacklist category: %s", category)
 		}
