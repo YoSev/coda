@@ -8,8 +8,29 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/yosev/coda/internal/metrics"
 	"github.com/yosev/coda/pkg/coda"
 )
+
+func addStatsToMetrics(c *coda.Coda, success bool) {
+	metrics.Inc("coda_total")
+
+	if success {
+		metrics.Inc("coda_successful_total")
+	} else {
+		metrics.Inc("coda_failed_total")
+	}
+
+	metrics.IncValue("coda_runtime_total", c.Stats.CodaRuntimeTotalms)
+	metrics.IncValue("operations_runtime_total", c.Stats.OperationsRuntimeTotalMs)
+	metrics.IncValue("operations_total", c.Stats.OperationsTotal)
+	metrics.IncValue("operations_successful_total", c.Stats.OperationsSuccessfulTotal)
+	metrics.IncValue("operations_failed_total", c.Stats.OperationsFailedTotal)
+	metrics.IncValue("operations_blacklisted_total", c.Stats.OperationsBlacklistedTotal)
+	metrics.IncValue("variables_total", c.Stats.VariablesTotal)
+	metrics.IncValue("variables_failed_total", c.Stats.VariablesFailedTotal)
+	metrics.IncValue("variables_successful_total", c.Stats.VariablesSuccessfulTotal)
+}
 
 func downloadFile(c *gin.Context) []byte {
 	url, err := url.Parse(strings.TrimLeft(c.Param("url"), "/"))

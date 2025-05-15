@@ -1,5 +1,6 @@
 coda:
-  debug: true
+  logs: true
+  stats: true
 store:
   username: John Doe The Greatest
   url: https://api.ipify.org?format=json
@@ -109,7 +110,7 @@ operations:
   store: osReversed
 - action: os.arch
   store: arch
-- action: io.stdout
+- action: io.stderr
   params:
     value: |-
       ip: ${store.apiResponse.body.ip | split:. | join:-}

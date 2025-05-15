@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/tidwall/gjson"
-	"github.com/yosev/coda/pkg/metrics"
 )
 
 func (c *Coda) resolveVariables(in json.RawMessage) (json.RawMessage, error) {
@@ -20,7 +19,7 @@ func (c *Coda) resolveVariables(in json.RawMessage) (json.RawMessage, error) {
 		return in, nil // No input to resolve
 	}
 	defer func() {
-		metrics.Inc("variables_total")
+		c.Stats.VariablesTotal++
 	}()
 
 	// Marshal `c` so we can use gjson to query it
@@ -44,7 +43,7 @@ func (c *Coda) resolveVariables(in json.RawMessage) (json.RawMessage, error) {
 		return nil, fmt.Errorf("failed to marshal resolved result: %w", err)
 	}
 
-	metrics.Inc("variables_successful_total")
+	c.Stats.VariablesSuccessfulTotal++
 	return json.RawMessage(out), nil
 }
 

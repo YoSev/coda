@@ -5,27 +5,22 @@ import (
 	"fmt"
 	"strings"
 	"time"
-
-	"github.com/yosev/coda/pkg/metrics"
 )
 
-func (c *Coda) Run() error {
+func (c *Coda) run() error {
 	start := time.Now()
 	c.debug(fmt.Sprintf("found %d operations", len(c.Operations)))
 	lastOp, ops, err := c.runOperations(c.Operations)
 	defer func() {
 		since := time.Since(start)
 		c.debug(fmt.Sprintf("executed %d operations after %s", ops, since))
-		metrics.Inc("coda_total")
-		metrics.IncValue("coda_runtime_total", float64(since.Milliseconds()))
+		c.Stats.CodaRuntimeTotalms += float64(since.Milliseconds())
 	}()
 
 	if err != nil {
-		metrics.Inc("coda_failed_total")
 		return fmt.Errorf("failed to execute node '%s': %s", lastOp.Action, err)
 	}
 
-	metrics.Inc("coda_successful_total")
 	return nil
 }
 
@@ -34,7 +29,7 @@ func (c *Coda) runOperations(ops []Operation) (Operation, int64, error) {
 	for _, op := range ops {
 		count++
 		if err := c.executeOperation(op); err != nil {
-			metrics.Inc("operations_failed_total")
+			c.Stats.OperationsFailedTotal++
 			// TODO check why wrong operation action/name is being returned
 			// failed to run coda: failed to execute node 'io.stdout': category of operation 'file.size' is disabled (File)
 
@@ -54,7 +49,7 @@ func (c *Coda) runOperations(ops []Operation) (Operation, int64, error) {
 				return ops[len(ops)-1], count, err
 			}
 		} else {
-			metrics.Inc("operations_successful_total")
+			c.Stats.OperationsSuccessfulTotal++
 		}
 	}
 	if len(ops) > 0 {
@@ -68,19 +63,19 @@ func (c *Coda) executeOperation(op Operation) error {
 		return fmt.Errorf("unknown action: %s", op.Action)
 	} else {
 		if c.isBlacklisted(action.Category) {
-			metrics.Inc("operations_blacklisted_total")
+			c.Stats.OperationsBlacklistedTotal++
 			return fmt.Errorf("category of operation '%s' is disabled (%s)", op.Action, action.Category)
 		}
 		start := time.Now()
 		defer func() {
 			since := time.Since(start)
-			metrics.Inc("operations_total")
-			metrics.IncValue("operations_runtime_total", float64(since.Milliseconds()))
+			c.Stats.OperationsTotal++
+			c.Stats.OperationsRuntimeTotalMs += float64(since.Milliseconds())
 			c.debug(fmt.Sprintf("executed operation '%s' after %s", action.Name, since))
 		}()
 		p, err := c.resolveVariables(op.Params)
 		if err != nil {
-			metrics.Inc("variables_failed_total")
+			c.Stats.VariablesFailedTotal++
 			return fmt.Errorf("failed to resolve variables: %v", err)
 		}
 		op.Params = p

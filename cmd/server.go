@@ -9,9 +9,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 	"github.com/yosev/coda/internal/controller"
+	"github.com/yosev/coda/internal/metrics"
 	"github.com/yosev/coda/internal/middleware"
 	"github.com/yosev/coda/internal/version"
-	"github.com/yosev/coda/pkg/metrics"
 )
 
 var serverCmd = &cobra.Command{

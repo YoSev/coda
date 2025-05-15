@@ -12,7 +12,9 @@ import (
 
 // CodaSettings contains the settings for the coda engine
 type CodaSettings struct {
-	Debug bool `json:"debug" yaml:"debug"` // optional
+	Logs     bool `json:"logs" yaml:"logs"`         // optional
+	Stats    bool `json:"stats" yaml:"stats"`       // optional
+	Extended bool `json:"extended" yaml:"extended"` // optional
 }
 
 // Operation is a single operation to be executed
@@ -32,8 +34,9 @@ const (
 
 // Coda is the main struct for the coda engine
 type Coda struct {
-	Coda       *CodaSettings              `json:"coda,omitempty" yaml:"coda,omitempty"` // optional
-	Logs       []string                   `json:"logs,omitempty" yaml:"logs,omitempty"` // optional
+	Coda       *CodaSettings              `json:"coda,omitempty" yaml:"coda,omitempty"`   // optional
+	Logs       []string                   `json:"logs,omitempty" yaml:"logs,omitempty"`   // optional
+	Stats      *CodaStats                 `json:"stats,omitempty" yaml:"stats,omitempty"` // optional
 	Store      map[string]json.RawMessage `json:"store" yaml:"store"`
 	Operations []Operation                `json:"operations,omitempty" yaml:"operations,omitempty"` // mandatory
 
@@ -44,6 +47,24 @@ type Coda struct {
 
 func New() *Coda {
 	return new()
+}
+
+func (c *Coda) Run() error {
+	return c.run()
+}
+
+// CleanUp the Coda instance by applying the coda.Coda settings
+func (c *Coda) CleanUp() {
+	if !c.Coda.Stats {
+		c.Stats = nil
+	}
+	if !c.Coda.Logs {
+		c.Logs = nil
+	}
+	if !c.Coda.Extended {
+		c.Coda = nil
+		c.Operations = nil
+	}
 }
 
 // NewFromJson creates a new Coda instance from a JSON string
@@ -82,9 +103,11 @@ func (c *Coda) FromYaml(y string) (*Coda, error) {
 
 // new creates a new Coda instance with default settings
 func new() *Coda {
-	return &Coda{
+	c := &Coda{
 		Coda: &CodaSettings{
-			Debug: false,
+			Logs:     false,
+			Stats:    false,
+			Extended: false,
 		},
 		Logs:       []string{},
 		Store:      make(map[string]json.RawMessage),
@@ -93,6 +116,8 @@ func new() *Coda {
 		Blacklist: []OperationCategory{},
 		fn:        fn.New(),
 	}
+	c.Stats = c.newStats()
+	return c
 }
 
 // validateSchema validates the input against the JSON schema

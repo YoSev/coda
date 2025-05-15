@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -73,5 +74,13 @@ func executeJ(j string) {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)
+	} else {
+		c.CleanUp()
+		b, err := json.Marshal(c)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "failed to marshal coda response: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Fprintf(os.Stdout, "%s\n", string(b))
 	}
 }

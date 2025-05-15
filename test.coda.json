@@ -203,7 +203,7 @@
       "store": "amount"
     },
     {
-      "action": "io.stdout",
+      "action": "io.stderr",
       "params": {
         "value": "uptime: ${store.exec.stdout}\nip: ${store.apiResponse.body.ip | split:. | join::}\nfileContentMd5: ${store.fileContent | sha512 | sha256 | sha1 | md5}\nusername: ${store.username}\nnotifications: ${store.preferences.notifications}\nfilesize: ${store.filesize}b\nmodtime: ${store.modtime}\ndatetime: ${store.dt}\ntimestamp: ${store.ts}\nhashedTimestamp: ${store.tsHashed}\nenv: ${store.env}\nenvSplitted: ${store.envSplitted}\nenvJoined: ${store.envSplitted | join:/}\nos: ${store.os}\nosReversed: ${store.osReversed}\narch: ${store.arch | lower | upper}\nmath: ${store.amount}"
       }

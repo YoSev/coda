@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/yosev/coda/pkg/coda"
+	"gopkg.in/yaml.v3"
 )
 
 var yamlCmd = &cobra.Command{
@@ -72,5 +74,27 @@ func executeY(j string) {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)
+	} else {
+		c.CleanUp()
+
+		// Convert to map first to handle json.RawMessage
+		var tmpMap map[string]interface{}
+		jsonData, err := json.Marshal(c)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "failed to marshal coda to json: %v\n", err)
+			os.Exit(1)
+		}
+
+		if err := json.Unmarshal(jsonData, &tmpMap); err != nil {
+			fmt.Fprintf(os.Stderr, "failed to unmarshal json to map: %v\n", err)
+			os.Exit(1)
+		}
+
+		b, err := yaml.Marshal(tmpMap)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "failed to marshal coda response: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Fprintf(os.Stdout, "%s\n", b)
 	}
 }

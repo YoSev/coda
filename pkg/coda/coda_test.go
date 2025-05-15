@@ -17,8 +17,8 @@ func TestNewFromJson_Valid(t *testing.T) {
 		t.Fatal("expected a valid instance, got nil")
 	}
 	// Check default settings
-	if instance.Coda.Debug != false {
-		t.Errorf("expected Coda.Debug to be false, got: %v", instance.Coda.Debug)
+	if instance.Coda.Logs != false {
+		t.Errorf("expected Coda.Logs to be false, got: %v", instance.Coda.Logs)
 	}
 	if instance.Store == nil {
 		t.Error("expected Store to be initialized, but it is nil")
@@ -41,7 +41,7 @@ func TestNewFromYaml_Valid(t *testing.T) {
 	// minimal valid YAML with settings and empty operations
 	input := `
 coda:
-  debug: true
+  logs: true
 operations: []
 `
 	instance, err := New().FromYaml(input)
@@ -51,8 +51,8 @@ operations: []
 	if instance == nil {
 		t.Fatal("expected a valid instance, got nil")
 	}
-	if instance.Coda.Debug != true {
-		t.Errorf("expected Coda.Debug to be true, got: %v", instance.Coda.Debug)
+	if instance.Coda.Logs != true {
+		t.Errorf("expected Coda.Logs to be true, got: %v", instance.Coda.Logs)
 	}
 	if instance.Store == nil {
 		t.Error("expected Store to be initialized, but it is nil")
