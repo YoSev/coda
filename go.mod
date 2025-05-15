@@ -56,3 +56,5 @@ require (
 )
 
 replace github.com/yosev/coda => ./
+
+replace golang.org/x/net => golang.org/x/net v0.38.0
