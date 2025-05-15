@@ -18,7 +18,7 @@ func Auth(r *gin.Engine, basicAuth *string) {
 			c.AbortWithStatus(401)
 			return
 		}
-		if auth != "Basic "+*basicAuth {
+		if auth != "Basic "+*basicAuth && auth != "basic "+*basicAuth {
 			c.AbortWithStatus(401)
 			return
 		}
