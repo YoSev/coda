@@ -1,6 +1,7 @@
 package coda
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -90,10 +91,79 @@ func (c *Coda) executeOperation(op Operation) error {
 
 		if op.Store != "" {
 			if len(result) != 0 {
-				c.Store[op.Store] = result
+				// check if the result should be stored in a JSON path
+				if strings.Contains(op.Store, ".") {
+					err := c.storeNestedJSONValue(op.Store, result)
+					if err != nil {
+						return fmt.Errorf("failed to store nested value: %v", err)
+					}
+				} else {
+					c.Store[op.Store] = result
+				}
 			}
 		}
 	}
+	return nil
+}
+
+func (c *Coda) storeNestedJSONValue(path string, value json.RawMessage) error {
+	parts := strings.Split(path, ".")
+	rootKey := parts[0]
+
+	// Create or update the nested structure
+	var rootObj map[string]interface{}
+
+	// If the root key exists, start with that data
+	if existingData, exists := c.Store[rootKey]; exists {
+		if err := json.Unmarshal(existingData, &rootObj); err != nil {
+			rootObj = make(map[string]interface{})
+		}
+	} else {
+		rootObj = make(map[string]interface{})
+	}
+
+	// Navigate to the right location and set the value
+	var valueObj interface{}
+	if err := json.Unmarshal(value, &valueObj); err != nil {
+		// If we can't unmarshal as object, use the raw value
+		valueObj = string(value)
+	}
+
+	// Navigate and build the nested structure
+	current := rootObj
+	for i := 1; i < len(parts)-1; i++ {
+		key := parts[i]
+
+		// Check if this path exists
+		if _, exists := current[key]; !exists {
+			current[key] = make(map[string]interface{})
+		}
+
+		// If it's not a map, convert it
+		if nextMap, ok := current[key].(map[string]interface{}); ok {
+			current = nextMap
+		} else {
+			// Replace with a new map
+			newMap := make(map[string]interface{})
+			current[key] = newMap
+			current = newMap
+		}
+	}
+
+	// Set the final value
+	if len(parts) > 1 {
+		lastKey := parts[len(parts)-1]
+		current[lastKey] = valueObj
+	}
+
+	// Convert back to JSON
+	updatedData, err := json.Marshal(rootObj)
+	if err != nil {
+		return err
+	}
+
+	// Store the updated structure
+	c.Store[rootKey] = json.RawMessage(updatedData)
 	return nil
 }
 
