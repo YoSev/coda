@@ -28,7 +28,6 @@ func HandleYaml(c *gin.Context, blacklist *[]string, payload []byte) {
 		}
 
 		if payload != nil {
-
 			payload, err = mergeYAML(payload, b)
 			if err != nil {
 				c.JSON(400, gin.H{"error": "failed to merge payloads"})

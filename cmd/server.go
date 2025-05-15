@@ -9,8 +9,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 	"github.com/yosev/coda/internal/controller"
+	"github.com/yosev/coda/internal/middleware"
+	"github.com/yosev/coda/internal/version"
 	"github.com/yosev/coda/pkg/metrics"
-	"github.com/yosev/coda/pkg/version"
 )
 
 var serverCmd = &cobra.Command{
@@ -47,31 +48,11 @@ func serverFn(cmd *cobra.Command, args []string) {
 	}))
 
 	// setup version headers
-	router.Use(func(c *gin.Context) {
-		c.Writer.Header().Set("x-coda-version", "coda/v"+version.VERSION)
-		c.Next()
-	})
+	middleware.Version(router, version.VERSION)
 
 	// setup basicAuth
 	if basicAuth != nil && *basicAuth != "" {
-		router.Use(func(c *gin.Context) {
-			// do not apply authorization for GET requests (eg. for health check)
-			if c.Request.Method == "GET" && c.Request.URL.Path == "/" {
-				c.Next()
-				return
-			}
-
-			auth := c.Request.Header.Get("Authorization")
-			if auth == "" {
-				c.Header("WWW-Authenticate", "Basic realm=\"coda\"")
-				c.AbortWithStatus(401)
-				return
-			}
-			if auth != "Basic "+*basicAuth {
-				c.AbortWithStatus(401)
-				return
-			}
-		})
+		middleware.Auth(router, basicAuth)
 	}
 
 	// setup default route
@@ -79,12 +60,16 @@ func serverFn(cmd *cobra.Command, args []string) {
 		c.AbortWithStatus(200)
 	})
 
-	// setup json file handler
+	// setup json handler
 	router.POST("/coda/j", func(c *gin.Context) {
 		controller.HandleJson(c, blacklist, nil)
 	})
-	// setup experimental json handler
+	// setup json file handler
 	router.POST("/coda/jj/*url", func(c *gin.Context) {
+		controller.HandleJsonFile(c, blacklist)
+	})
+	// setup json file handler with custom payload
+	router.POST("/coda/jjc/:key/*url", func(c *gin.Context) {
 		controller.HandleJsonFile(c, blacklist)
 	})
 
@@ -92,7 +77,7 @@ func serverFn(cmd *cobra.Command, args []string) {
 	router.POST("/coda/y", func(c *gin.Context) {
 		controller.HandleYaml(c, blacklist, nil)
 	})
-	// setup experimental yaml file handler
+	// setup yaml file handler
 	router.POST("/coda/yy/*url", func(c *gin.Context) {
 		controller.HandleYamlFile(c, blacklist)
 	})

@@ -24,6 +24,20 @@ func HandleJson(c *gin.Context, blacklist *[]string, payload []byte) {
 			fmt.Fprintf(os.Stderr, "failed to read request body: %v\n", err)
 			return
 		}
+
+		if c.Param("key") != "" {
+			key := c.Param("key")
+			payload := &coda.Coda{
+				Store: map[string]json.RawMessage{key: b},
+			}
+			b, err = json.Marshal(payload)
+			if err != nil {
+				c.JSON(400, gin.H{"error": "failed to inject request body into store: " + err.Error()})
+				fmt.Fprintf(os.Stderr, "failed to inject request body into store: %v\n", err)
+				return
+			}
+		}
+
 		if payload != nil {
 			payload, err = mergeJson(payload, b)
 			if err != nil {
