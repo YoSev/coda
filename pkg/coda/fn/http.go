@@ -8,6 +8,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/yosev/coda/pkg/version"
 )
 
 type HttpReqParams struct {
@@ -39,6 +41,11 @@ func (f *Fn) HttpReq(j json.RawMessage) (json.RawMessage, error) {
 
 		for key, value := range params.Headers {
 			req.Header.Set(key, value)
+		}
+
+		// add coda/version as user agent in case it is not set
+		if req.Header.Get("User-Agent") == "" {
+			req.Header.Set("User-Agent", fmt.Sprintf("coda/v%s", version.VERSION))
 		}
 
 		resp, err := client.Do(req)
