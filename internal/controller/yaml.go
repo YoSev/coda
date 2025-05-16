@@ -7,11 +7,12 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/yosev/coda/internal/config"
 	"github.com/yosev/coda/pkg/coda"
 	"sigs.k8s.io/yaml"
 )
 
-func HandleYaml(c *gin.Context, blacklist *[]string, payload []byte) {
+func HandleYaml(c *gin.Context, payload []byte) {
 	if c.Request.ContentLength > 0 {
 		if c.Request.Header.Get("Content-Type") != "text/yaml" &&
 			c.Request.Header.Get("Content-Type") != "application/x-yaml" &&
@@ -40,7 +41,7 @@ func HandleYaml(c *gin.Context, blacklist *[]string, payload []byte) {
 
 	start := time.Now()
 	codaInstance := coda.New()
-	err := applyBlacklist(blacklist, codaInstance)
+	err := applyBlacklist(config.GetConfig().Blacklist, codaInstance)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to apply blacklist: %v\n", err)
 		os.Exit(1)
@@ -72,9 +73,9 @@ func HandleYaml(c *gin.Context, blacklist *[]string, payload []byte) {
 	c.String(200, string(y))
 }
 
-func HandleYamlFile(c *gin.Context, blacklist *[]string) {
+func HandleYamlFile(c *gin.Context) {
 	payload := downloadFile(c)
-	HandleYaml(c, blacklist, payload)
+	HandleYaml(c, payload)
 }
 
 func mergeYAML(yamlA, yamlB []byte) ([]byte, error) {

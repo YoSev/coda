@@ -8,10 +8,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/yosev/coda/internal/config"
 	"github.com/yosev/coda/pkg/coda"
 )
 
-func HandleJson(c *gin.Context, blacklist *[]string, payload []byte) {
+func HandleJson(c *gin.Context, payload []byte) {
 	if c.Request.ContentLength > 0 {
 		if c.Request.Header.Get("Content-Type") != "application/json" {
 			c.JSON(400, gin.H{"error": "Content-Type must be application/json"})
@@ -51,7 +52,7 @@ func HandleJson(c *gin.Context, blacklist *[]string, payload []byte) {
 
 	start := time.Now()
 	codaInstance := coda.New()
-	err := applyBlacklist(blacklist, codaInstance)
+	err := applyBlacklist(config.GetConfig().Blacklist, codaInstance)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to apply blacklist: %v\n", err)
 		os.Exit(1)
@@ -76,9 +77,9 @@ func HandleJson(c *gin.Context, blacklist *[]string, payload []byte) {
 	c.JSON(200, codaInstance)
 }
 
-func HandleJsonFile(c *gin.Context, blacklist *[]string) {
+func HandleJsonFile(c *gin.Context) {
 	payload := downloadFile(c)
-	HandleJson(c, blacklist, payload)
+	HandleJson(c, payload)
 }
 
 func mergeJson(jsonA, jsonB []byte) ([]byte, error) {

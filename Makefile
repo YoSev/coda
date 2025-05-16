@@ -17,7 +17,7 @@ test:
 	go test ./...
 
 dev+server:
-	go run -race main.go server
+	go run -race main.go server --influxdb=https://glc_eyJvIjoiNTI2NjczIiwibiI6InN0YWNrLTEyNTU4MzItaW5mbHV4LXdyaXRlLWNvZGEiLCJrIjoidE1xMW9LNzRZN3ExNk1BY2hVVTEzNnUwIiwibSI6eyJyIjoicHJvZC1ldS13ZXN0LTIifX0=@influx-prod-24-prod-eu-west-2.grafana.net/api/v2/write?bucket=ffmate
 
 dev+json:
 	go run main.go jj test.coda.json

@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
+	"github.com/yosev/coda/internal/config"
 	"github.com/yosev/coda/internal/controller"
 	"github.com/yosev/coda/internal/metrics"
 	"github.com/yosev/coda/internal/middleware"
@@ -25,15 +26,20 @@ var serverCmd = &cobra.Command{
 var port *int
 var blacklist *[]string
 var basicAuth *string
+var influxDb *string
 
 func init() {
 	rootCmd.AddCommand(serverCmd)
 	port = serverCmd.PersistentFlags().IntP("port", "p", 3000, "port to run the server on")
 	blacklist = serverCmd.PersistentFlags().StringSliceP("blacklist", "b", []string{}, "comma separated list of blacklisted operation categories")
 	basicAuth = serverCmd.PersistentFlags().StringP("auth", "a", "", "base64 encoded username:password for basic auth")
+	influxDb = serverCmd.PersistentFlags().StringP("influxdb", "i", "", "influxdb url to send metrics to (dsn-style)")
 }
 
 func serverFn(cmd *cobra.Command, args []string) {
+	config.GetConfig().InfluxDB = influxDb
+	config.GetConfig().Blacklist = blacklist
+
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
@@ -62,24 +68,24 @@ func serverFn(cmd *cobra.Command, args []string) {
 
 	// setup json handler
 	router.POST("/coda/j", func(c *gin.Context) {
-		controller.HandleJson(c, blacklist, nil)
+		controller.HandleJson(c, nil)
 	})
 	// setup json file handler
 	router.POST("/coda/jj/*url", func(c *gin.Context) {
-		controller.HandleJsonFile(c, blacklist)
+		controller.HandleJsonFile(c)
 	})
 	// setup json file handler with custom payload
 	router.POST("/coda/jjc/:key/*url", func(c *gin.Context) {
-		controller.HandleJsonFile(c, blacklist)
+		controller.HandleJsonFile(c)
 	})
 
 	// setup yaml handler
 	router.POST("/coda/y", func(c *gin.Context) {
-		controller.HandleYaml(c, blacklist, nil)
+		controller.HandleYaml(c, nil)
 	})
 	// setup yaml file handler
 	router.POST("/coda/yy/*url", func(c *gin.Context) {
-		controller.HandleYamlFile(c, blacklist)
+		controller.HandleYamlFile(c)
 	})
 
 	// setup metrics

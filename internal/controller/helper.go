@@ -5,9 +5,11 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/yosev/coda/internal/config"
 	"github.com/yosev/coda/internal/metrics"
 	"github.com/yosev/coda/pkg/coda"
 )
@@ -30,6 +32,13 @@ func addStatsToMetrics(c *coda.Coda, success bool) {
 	metrics.IncValue("variables_total", c.Stats.VariablesTotal)
 	metrics.IncValue("variables_failed_total", c.Stats.VariablesFailedTotal)
 	metrics.IncValue("variables_successful_total", c.Stats.VariablesSuccessfulTotal)
+
+	if config.GetConfig().InfluxDB != nil && *config.GetConfig().InfluxDB != "" && c.Stats != nil {
+		err := metrics.SendStatsToInfluxDB(*config.GetConfig().InfluxDB, c.Stats)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "failed to send stats to InfluxDB: %v", err)
+		}
+	}
 }
 
 func downloadFile(c *gin.Context) []byte {
@@ -77,7 +86,7 @@ func downloadFile(c *gin.Context) []byte {
 }
 
 func applyBlacklist(blacklist *[]string, c *coda.Coda) error {
-	if len(*blacklist) == 0 {
+	if *blacklist == nil || len(*blacklist) == 0 {
 		return nil
 	}
 
