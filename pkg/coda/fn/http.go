@@ -20,7 +20,6 @@ type HttpReqParams struct {
 }
 
 func (f *Fn) HttpReq(j json.RawMessage) (json.RawMessage, error) {
-
 	return handleJSON(j, func(params *HttpReqParams) (json.RawMessage, error) {
 		url, err := url.Parse(params.Url)
 		if err != nil {
