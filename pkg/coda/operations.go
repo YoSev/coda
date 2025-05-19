@@ -29,6 +29,7 @@ var operations = map[string]*OperationHandler{
 			{Name: "model", Description: "The modal to use", Mandatory: true},
 			{Name: "api_key", Description: "The key to use", Mandatory: true},
 			{Name: "system", Description: "The system query", Mandatory: false},
+			{Name: "attachments", Description: "The attachments to include", Type: "array", Mandatory: false},
 		},
 	},
 	"http.request": {
