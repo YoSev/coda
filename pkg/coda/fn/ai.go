@@ -28,7 +28,25 @@ func (f *Fn) OpenAI(j json.RawMessage) (json.RawMessage, error) {
 			return nil, fmt.Errorf("failed to initialize LLM: %v\n", err)
 		}
 
-		response, err := llm.Call(context.Background(), params.Prompt)
+		input := []openai.ChatMessage{}
+		if params.System != "" {
+			input = append(input, openai.ChatMessage{
+				Role:    openai.RoleSystem,
+				Content: params.System,
+			})
+		}
+		input = append(input, openai.ChatMessage{
+			Role:    openai.RoleUser,
+			Content: params.Prompt,
+		})
+
+		// Serialize input to JSON or another string format
+		inputBytes, err := json.Marshal(input)
+		if err != nil {
+			return nil, fmt.Errorf("failed to serialize input: %v\n", err)
+		}
+
+		response, err := llm.Call(context.Background(), string(inputBytes))
 		if err != nil {
 			return nil, fmt.Errorf("error during LLM call: %v\n", err)
 		}

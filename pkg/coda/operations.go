@@ -17,6 +17,20 @@ func (c *Coda) GetOperations() map[string]*OperationHandler {
 }
 
 var operations = map[string]*OperationHandler{
+	"ai.openai": {
+		Fn: func(c *Coda, params json.RawMessage) (json.RawMessage, error) {
+			return c.fn.OpenAI(params)
+		},
+		Name:        "ai.openai",
+		Description: "Performs an AI request",
+		Category:    OperationCategoryAI,
+		Parameters: []OperationParameter{
+			{Name: "prompt", Description: "The actual prompt", Mandatory: true},
+			{Name: "model", Description: "The modal to use", Mandatory: true},
+			{Name: "api_key", Description: "The key to use", Mandatory: true},
+			{Name: "system", Description: "The system query", Mandatory: false},
+		},
+	},
 	"http.request": {
 		Fn: func(c *Coda, params json.RawMessage) (json.RawMessage, error) {
 			return c.fn.HttpReq(params)
@@ -194,6 +208,39 @@ var operations = map[string]*OperationHandler{
 		Parameters: []OperationParameter{
 			{Name: "value", Description: "The string to join", Mandatory: true},
 			{Name: "delimiter", Description: "The delimiter to use", Mandatory: false},
+		},
+	},
+	"string.resolve": {
+		Fn: func(c *Coda, params json.RawMessage) (json.RawMessage, error) {
+			return c.fn.StringResolve(params)
+		},
+		Name:        "string.resolve",
+		Description: "Return a (resolved) string",
+		Category:    OperationCategoryString,
+		Parameters: []OperationParameter{
+			{Name: "value", Description: "The string to resolve", Mandatory: true},
+		},
+	},
+	"json.decode": {
+		Fn: func(c *Coda, params json.RawMessage) (json.RawMessage, error) {
+			return c.fn.JsonDecode(params)
+		},
+		Name:        "json.decode",
+		Description: "Decode an object to a json string",
+		Category:    OperationCategoryString,
+		Parameters: []OperationParameter{
+			{Name: "value", Description: "The object to decode", Mandatory: true},
+		},
+	},
+	"json.encode": {
+		Fn: func(c *Coda, params json.RawMessage) (json.RawMessage, error) {
+			return c.fn.JsonEncode(params)
+		},
+		Name:        "json.encode",
+		Description: "Encode a json string",
+		Category:    OperationCategoryString,
+		Parameters: []OperationParameter{
+			{Name: "value", Description: "The string to encode", Mandatory: true},
 		},
 	},
 	"file.size": {
@@ -480,4 +527,5 @@ const (
 	OperationCategoryHTTP   OperationCategory = "HTTP"
 	OperationCategoryHash   OperationCategory = "Hash"
 	OperationCategoryMath   OperationCategory = "Math"
+	OperationCategoryAI     OperationCategory = "AI"
 )

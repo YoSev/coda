@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/sha512"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -15,6 +16,7 @@ import (
 )
 
 func (c *Coda) resolveVariables(in json.RawMessage) (json.RawMessage, error) {
+
 	if len(in) == 0 {
 		return in, nil // No input to resolve
 	}
@@ -200,6 +202,35 @@ func applySingleFilter(val any, filter Filter) any {
 			hash.Write([]byte(s))
 			hashBytes := hash.Sum(nil)
 			return fmt.Sprintf("%x", hashBytes)
+		}
+	case "jsonDecode":
+		if s, ok := val.(string); ok {
+			var b = make(map[string]interface{})
+			err := json.Unmarshal([]byte(s), &b)
+			if err != nil {
+				return s
+			}
+			return b
+		}
+	case "jsonEncode":
+		if s, ok := val.(any); ok {
+			b, err := json.Marshal(s)
+			if err != nil {
+				return s
+			}
+			return string(b)
+		}
+	case "base64Decode":
+		if s, ok := val.(string); ok {
+			b, err := base64.StdEncoding.DecodeString(s)
+			if err != nil {
+				return s
+			}
+			return string(b)
+		}
+	case "base64Encode":
+		if s, ok := val.(string); ok {
+			return base64.StdEncoding.EncodeToString([]byte(s))
 		}
 	}
 	return val

@@ -7,6 +7,10 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
+type anyParams struct {
+	Value any `json:"value" yaml:"value"`
+}
+
 type stringParams struct {
 	Value string `json:"value" yaml:"value"`
 }
@@ -80,5 +84,31 @@ type stringArrayWithDelimiterParams struct {
 func (f *Fn) StringJoin(j json.RawMessage) (json.RawMessage, error) {
 	return handleJSON(j, func(params *stringArrayWithDelimiterParams) (json.RawMessage, error) {
 		return returnRaw(strings.Join(params.Value, params.Delimiter)), nil
+	})
+}
+
+func (f *Fn) StringResolve(j json.RawMessage) (json.RawMessage, error) {
+	return handleJSON(j, func(params *anyParams) (json.RawMessage, error) {
+		return returnRaw(params.Value), nil
+	})
+}
+
+func (f *Fn) JsonEncode(j json.RawMessage) (json.RawMessage, error) {
+	return handleJSON(j, func(params *anyParams) (json.RawMessage, error) {
+		out, err := json.Marshal(params.Value)
+		if err != nil {
+			return nil, err
+		}
+		return returnRaw(out), nil
+	})
+}
+
+func (f *Fn) JsonDecode(j json.RawMessage) (json.RawMessage, error) {
+	return handleJSON(j, func(params *stringParams) (json.RawMessage, error) {
+		var out any
+		if err := json.Unmarshal([]byte(params.Value), &out); err != nil {
+			return nil, err
+		}
+		return returnRaw(out), nil
 	})
 }
