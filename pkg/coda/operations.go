@@ -17,6 +17,42 @@ func (c *Coda) GetOperations() map[string]*OperationHandler {
 }
 
 var operations = map[string]*OperationHandler{
+	"s3.upload": {
+		Fn: func(c *Coda, params json.RawMessage) (json.RawMessage, error) {
+			return c.fn.UploadToS3(params)
+		},
+		Name:        "s3.upload",
+		Description: "Uploads a file to S3",
+		Category:    OperationCategoryFile,
+		Parameters: []OperationParameter{
+			{Name: "endpoint", Description: "The S3 endpoint to use", Mandatory: true},
+			{Name: "bucket", Description: "The S3 bucket to use", Mandatory: true},
+			{Name: "region", Description: "The S3 region to use", Mandatory: true},
+			{Name: "key_id", Description: "The S3 key ID to use", Mandatory: true},
+			{Name: "key_secret", Description: "The S3 key secret to use", Mandatory: true},
+			{Name: "local_path", Description: "The local path to upload", Mandatory: true},
+			{Name: "remote_path", Description: "The remote path in the S3 bucket", Mandatory: false},
+			{Name: "remote_prefix", Description: "The remote prefix in the S3 bucket (for recursive upload)", Mandatory: false},
+			{Name: "invisible_files", Description: "If true, invisible files will be uploaded", Type: "boolean", Mandatory: false},
+		},
+	},
+	"s3.download": {
+		Fn: func(c *Coda, params json.RawMessage) (json.RawMessage, error) {
+			return c.fn.DownloadFromS3(params)
+		},
+		Name:        "s3.download",
+		Description: "Downloads a file from S3",
+		Category:    OperationCategoryFile,
+		Parameters: []OperationParameter{
+			{Name: "endpoint", Description: "The S3 endpoint to use", Mandatory: true},
+			{Name: "bucket", Description: "The S3 bucket to use", Mandatory: true},
+			{Name: "region", Description: "The S3 region to use", Mandatory: true},
+			{Name: "key_id", Description: "The S3 key ID to use", Mandatory: true},
+			{Name: "key_secret", Description: "The S3 key secret to use", Mandatory: true},
+			{Name: "local_path", Description: "The local path to download to", Mandatory: true},
+			{Name: "remote_path", Description: "The remote path in the S3 bucket", Mandatory: false},
+		},
+	},
 	"ai.openai": {
 		Fn: func(c *Coda, params json.RawMessage) (json.RawMessage, error) {
 			return c.fn.OpenAI(params)
