@@ -151,6 +151,9 @@ func (s *Schema) populateSchema(version string) {
 						"$ref": "#/$defs/Operation",
 					},
 				},
+				"async": map[string]interface{}{
+					"type": "boolean",
+				},
 			},
 			"required":             requiredFields,
 			"additionalProperties": false,

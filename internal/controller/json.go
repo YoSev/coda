@@ -73,7 +73,14 @@ func HandleJson(c *gin.Context, blacklist *[]string, payload []byte) {
 
 	fmt.Printf("processed coda request with %d operations after %s\n", len(codaInstance.Operations), time.Since(start))
 	codaInstance.Finish()
-	c.JSON(200, codaInstance)
+	y, err := codaInstance.Marshal()
+	if err != nil {
+		c.JSON(500, gin.H{"error": "failed to marshal coda to json: " + err.Error()})
+		fmt.Fprintf(os.Stderr, "failed to marshal coda to json: %v\n", err)
+		return
+	}
+	c.Header("Content-Type", "application/json")
+	c.String(200, string(y))
 }
 
 func HandleJsonFile(c *gin.Context, blacklist *[]string) {

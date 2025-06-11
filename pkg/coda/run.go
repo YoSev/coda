@@ -79,13 +79,17 @@ func (c *Coda) executeOperation(op Operation) error {
 			return fmt.Errorf("failed to resolve variables: %v", err)
 		}
 		op.Params = p
-		result, err := action.Fn(c, op.Params)
-		if err != nil {
-			return err
-		}
 
-		if op.Store != "" {
-			if len(result) != 0 {
+		execWithLock := func() error {
+			c.storeMutex.Lock()
+			defer c.storeMutex.Unlock()
+
+			result, err := action.Fn(c, op.Params)
+			if err != nil {
+				return err
+			}
+
+			if op.Store != "" && len(result) != 0 {
 				// check if the result should be stored in a JSON path
 				if strings.Contains(op.Store, ".") {
 					err := c.storeNestedJSONValue(op.Store, result)
@@ -96,9 +100,15 @@ func (c *Coda) executeOperation(op Operation) error {
 					c.Store[op.Store] = result
 				}
 			}
+			return nil
 		}
+
+		if op.Async {
+			go execWithLock()
+			return nil
+		}
+		return execWithLock()
 	}
-	return nil
 }
 
 func (c *Coda) storeNestedJSONValue(path string, value json.RawMessage) error {

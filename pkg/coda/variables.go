@@ -16,7 +16,8 @@ import (
 )
 
 func (c *Coda) resolveVariables(in json.RawMessage) (json.RawMessage, error) {
-
+	c.storeMutex.Lock()
+	defer c.storeMutex.Unlock()
 	if len(in) == 0 {
 		return in, nil // No input to resolve
 	}

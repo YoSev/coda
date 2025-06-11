@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/xeipuuv/gojsonschema"
 	"github.com/yosev/coda/pkg/coda/fn"
@@ -28,6 +29,7 @@ type Operation struct {
 	Params json.RawMessage `json:"params,omitempty" yaml:"params,omitempty"` // optional
 	Store  string          `json:"store,omitempty" yaml:"store,omitempty"`   // optional
 	OnFail []Operation     `json:"onFail,omitempty" yaml:"onFail,omitempty"` // optional
+	Async  bool            `json:"async,omitempty" yaml:"async,omitempty"`   // optional
 }
 
 type source string
@@ -45,9 +47,10 @@ type Coda struct {
 	Store      map[string]json.RawMessage `json:"store" yaml:"store"`
 	Operations []Operation                `json:"operations,omitempty" yaml:"operations,omitempty"` // mandatory
 
-	fn        *fn.Fn
-	source    source
-	blacklist []OperationCategory `json:"-" yaml:"-"`
+	fn         *fn.Fn
+	source     source
+	storeMutex sync.RWMutex
+	blacklist  []OperationCategory `json:"-" yaml:"-"`
 }
 
 func New() *Coda {
@@ -70,6 +73,17 @@ func (c *Coda) Finish() {
 		c.Coda = nil
 		c.Operations = nil
 	}
+}
+
+// Marshal the Coda instance to json or yaml based on the source
+func (c *Coda) Marshal() ([]byte, error) {
+	c.storeMutex.RLock()
+	defer c.storeMutex.RUnlock()
+	if c.source == SOURCE_YAML {
+		// If the source is YAML, marshal to YAML
+		return yaml.Marshal(c)
+	}
+	return json.Marshal(c)
 }
 
 // Blacklist categories of operations for this run
@@ -123,8 +137,9 @@ func new() *Coda {
 		Store:      make(map[string]json.RawMessage),
 		Operations: []Operation{},
 
-		blacklist: []OperationCategory{},
-		fn:        fn.New(),
+		blacklist:  []OperationCategory{},
+		fn:         fn.New(),
+		storeMutex: sync.RWMutex{},
 	}
 	c.Stats = c.newStats()
 	return c

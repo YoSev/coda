@@ -62,7 +62,8 @@ func HandleYaml(c *gin.Context, blacklist *[]string, payload []byte) {
 
 	fmt.Printf("processed coda request with %d operations after %s\n", len(codaInstance.Operations), time.Since(start))
 	codaInstance.Finish()
-	y, err := yaml.Marshal(codaInstance)
+
+	y, err := codaInstance.Marshal()
 	if err != nil {
 		c.JSON(500, gin.H{"error": "failed to marshal coda to yaml: " + err.Error()})
 		fmt.Fprintf(os.Stderr, "failed to marshal coda to yaml: %v\n", err)
