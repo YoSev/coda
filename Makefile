@@ -1,3 +1,5 @@
+VERSION ?= $(shell cat ./pkg/version/.version)
+
 build+darwin+arm64:
 	mkdir -p _bin
 	GOOS=darwin GOARCH=arm64 go build -o _bin/coda-darwin-arm64 main.go
@@ -24,6 +26,11 @@ dev+json:
 
 dev+yaml:
 	go run main.go yy test.coda.yaml
+
+build+docker: build+linux+amd64
+	docker buildx build --platform linux/amd64 -t ghcr.io/yosev/coda:$(VERSION) -t ghcr.io/yosev/coda:latest -f Dockerfile.local .
+	docker push ghcr.io/yosev/coda:$(VERSION) 
+	docker push ghcr.io/yosev/coda:latest
 
 air: 
 	air

@@ -6,11 +6,6 @@ import (
 
 func Auth(r *gin.Engine, basicAuth *string) {
 	r.Use(func(c *gin.Context) {
-		if c.Request.Method == "GET" && c.Request.URL.Path == "/" {
-			c.Next()
-			return
-		}
-
 		// Apply auth to all other endpoints including metrics
 		auth := c.Request.Header.Get("Authorization")
 		if auth == "" {

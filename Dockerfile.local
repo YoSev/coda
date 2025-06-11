@@ -1,0 +1,7 @@
+FROM alpine:3.22.0
+
+COPY ./_bin/coda-linux-amd64 /coda-docker-linux
+
+EXPOSE 3000
+
+CMD ["/coda-docker-linux", "server"]
