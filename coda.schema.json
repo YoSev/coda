@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Coda JSON Schema",
+  "version": "0.0.0",
+  "type": "object",
+  "properties": {
+    "coda": {
+      "type": "object",
+      "properties": {
+        "logs": { "type": "boolean" },
+        "stats": { "type": "boolean" },
+        "extended": { "type": "boolean" }
+      },
+      "additionalProperties": false,
+      "required": []
+    },
+    "store": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": []
+    },
+    "operations": {
+      "type": "array",
+      "items": {
+        "anyOf": []
+      },
+      "required": []
+    }
+  },
+  "additionalProperties": false
+}
