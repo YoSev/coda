@@ -81,13 +81,14 @@ func (c *Coda) executeOperation(op Operation) error {
 		op.Params = p
 
 		execWithLock := func() error {
-			c.mutex.Lock()
-			defer c.mutex.Unlock()
-
 			result, err := action.Fn(c, op.Params)
 			if err != nil {
 				return err
 			}
+
+			// delay locking to make this routine non-blocking during the actual execution
+			c.mutex.Lock()
+			defer c.mutex.Unlock()
 
 			if op.Store != "" && len(result) != 0 {
 				// check if the result should be stored in a JSON path

@@ -57,6 +57,14 @@ type Coda struct {
 	blacklist []OperationCategory `json:"-" yaml:"-"`
 }
 
+type codaDTO struct {
+	Coda       *CodaSettings              `json:"coda,omitempty" yaml:"coda,omitempty"`
+	Logs       []string                   `json:"logs,omitempty" yaml:"logs,omitempty"`
+	Stats      *CodaStats                 `json:"stats,omitempty" yaml:"stats,omitempty"`
+	Store      map[string]json.RawMessage `json:"store" yaml:"store"`
+	Operations []Operation                `json:"operations,omitempty" yaml:"operations,omitempty"`
+}
+
 // New creates a new Coda instance with default settings
 func New() *Coda {
 	return new()
@@ -64,33 +72,38 @@ func New() *Coda {
 
 // Run executes the coda operations and returns any error encountered
 func (c *Coda) Run() error {
-	err := c.run()
-	c.finish()
-	return err
+	return c.run()
 }
 
-func (c *Coda) finish() {
-	if !c.Coda.Stats {
-		c.Stats = nil
+func (c *Coda) toDto() *codaDTO {
+	c.mutex.RLock()
+	defer c.mutex.RUnlock()
+
+	var out = &codaDTO{Store: c.Store}
+
+	if c.Coda != nil {
+		if c.Coda.Logs {
+			out.Logs = c.Logs
+		}
+		if c.Coda.Stats {
+			out.Stats = c.Stats
+		}
+		if c.Coda.Extended {
+			out.Coda = c.Coda
+			out.Operations = c.Operations
+		}
 	}
-	if !c.Coda.Logs {
-		c.Logs = nil
-	}
-	if !c.Coda.Extended {
-		c.Coda = nil
-		c.Operations = nil
-	}
+
+	return out
 }
 
 // Marshal the Coda instance to json or yaml based on the source
 func (c *Coda) Marshal() ([]byte, error) {
-	c.mutex.RLock()
-	defer c.mutex.RUnlock()
 	if c.source == SOURCE_YAML {
 		// If the source is YAML, marshal to YAML
-		return yaml.Marshal(c)
+		return yaml.Marshal(c.toDto())
 	}
-	return json.Marshal(c)
+	return json.Marshal(c.toDto())
 }
 
 // Blacklist categories of operations for this run
