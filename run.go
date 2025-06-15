@@ -78,6 +78,7 @@ func (c *Coda) executeOperation(op Operation) error {
 			c.Stats.VariablesFailedTotal++
 			return fmt.Errorf("failed to resolve variables: %v", err)
 		}
+		fmt.Println(string(p))
 		op.Params = p
 
 		execWithLock := func() error {

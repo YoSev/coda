@@ -10,7 +10,7 @@ func TestShoutrrr(t *testing.T) {
 	f = New("0.0.0")
 
 	// Example JSON input for Shoutrrr function
-	jsonInput := `{"url": ["telegram://123456789:TESTTOKEN987@telegram?chats=416898072"], "message": "Hello, *Shoutrrr*!", "parameters": {"parsemode": "markdown"}}`
+	jsonInput := `{"urls": ["telegram://123456789:TESTTOKEN987@telegram?chats=416898072"], "message": "Hello, *Shoutrrr*!", "parameters": {"parsemode": "markdown"}}`
 
 	result, err = f.Shoutrrr([]byte(jsonInput))
 	if err == nil {

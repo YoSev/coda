@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/xeipuuv/gojsonschema"
@@ -69,7 +70,7 @@ type SchemaOperationParamsWrapper struct {
 }
 
 type SchemaOperationParams struct {
-	Type  string   `json:"type,omitempty"`
+	Type  []string `json:"type,omitempty"`
 	Enum  []string `json:"enum,omitempty"`
 	Const string   `json:"const,omitempty"`
 }
@@ -127,15 +128,19 @@ func (s *Schema) populateSchema(version string) {
 		requiredParamNames := []string{}
 
 		for _, parameter := range operation.Parameters {
-			param := SchemaOperationParams{Type: "string"}
+			param := SchemaOperationParams{Type: []string{"string"}}
 			if parameter.Type != "" {
 				if parameter.Type == "any" {
-					param.Type = ""
+					param.Type = []string{}
 				} else if len(strings.Split(parameter.Type, ",")) > 1 {
-					param.Type = parameter.Type
+					param.Type = strings.Split(parameter.Type, ",")
 				} else {
-					param.Type = parameter.Type
+					param.Type = []string{parameter.Type}
 				}
+			}
+			if len(param.Type) > 0 && !slices.Contains(param.Type, "string") {
+				param.Type = append(param.Type, "string") // Ensure string is always included to support $wildcards
+
 			}
 			if parameter.Enum != nil {
 				param.Enum = parameter.Enum
@@ -181,7 +186,7 @@ func (s *Schema) populateSchema(version string) {
 			paramProps := map[string]interface{}{}
 			for k, v := range paramDefinitions {
 				prop := map[string]interface{}{}
-				if v.Type != "" {
+				if len(v.Type) != 0 {
 					prop["type"] = v.Type
 				}
 				if len(v.Enum) > 0 {
