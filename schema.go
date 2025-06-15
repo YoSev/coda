@@ -27,6 +27,7 @@ type Schema struct {
 
 type SchemaProperties struct {
 	Coda       *SchemaCodaProperty       `json:"coda,omitempty"`
+	Secrets    *SchemaSecretsProperty    `json:"secrets,omitempty"`
 	Store      *SchemaStoreProperty      `json:"store,omitempty"`
 	Operations *SchemaOperationsProperty `json:"operations,omitempty"`
 }
@@ -39,6 +40,11 @@ type SchemaCodaProperty struct {
 }
 
 type SchemaStoreProperty struct {
+	Type                 string   `json:"type"`
+	Required             []string `json:"required,omitempty"`
+	AdditionalProperties bool     `json:"additionalProperties"`
+}
+type SchemaSecretsProperty struct {
 	Type                 string   `json:"type"`
 	Required             []string `json:"required,omitempty"`
 	AdditionalProperties bool     `json:"additionalProperties"`

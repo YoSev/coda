@@ -49,6 +49,7 @@ type Coda struct {
 	Logs       []string                   `json:"logs,omitempty" yaml:"logs,omitempty"`   // optional
 	Stats      *CodaStats                 `json:"stats,omitempty" yaml:"stats,omitempty"` // optional
 	Store      map[string]json.RawMessage `json:"store" yaml:"store"`
+	Secrets    map[string]json.RawMessage `json:"secrets" yaml:"secrets"`
 	Operations []Operation                `json:"operations,omitempty" yaml:"operations,omitempty"` // mandatory
 
 	fn        *fn.Fn
@@ -75,7 +76,7 @@ func (c *Coda) Run() error {
 	return c.run()
 }
 
-func (c *Coda) toDto() *codaDTO {
+func (c *Coda) ToDto() *codaDTO {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
 
@@ -101,9 +102,9 @@ func (c *Coda) toDto() *codaDTO {
 func (c *Coda) Marshal() ([]byte, error) {
 	if c.source == SOURCE_YAML {
 		// If the source is YAML, marshal to YAML
-		return yaml.Marshal(c.toDto())
+		return yaml.Marshal(c.ToDto())
 	}
-	return json.Marshal(c.toDto())
+	return json.Marshal(c.ToDto())
 }
 
 // Blacklist categories of operations for this run
