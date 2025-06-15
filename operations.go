@@ -18,6 +18,18 @@ func (c *Coda) GetOperations() map[string]*OperationHandler {
 }
 
 var operations = map[string]*OperationHandler{
+	"io.shoutrrr": {
+		Fn: func(c *Coda, params json.RawMessage) (json.RawMessage, error) {
+			return c.fn.Shoutrrr(params)
+		},
+		Name:        "io.shoutrrr",
+		Description: "Sends a message using the Shoutrrr notification system",
+		Category:    OperationCategoryMessaging,
+		Parameters: []OperationParameter{
+			{Name: "urls", Description: "The shoutrrr targets", Type: "array", Mandatory: true},
+			{Name: "Message", Description: "The shoutrrr message to send", Mandatory: true},
+		},
+	},
 	"s3.upload": {
 		Fn: func(c *Coda, params json.RawMessage) (json.RawMessage, error) {
 			return c.fn.UploadToS3(params)
@@ -557,13 +569,14 @@ type OperationHandler struct {
 type OperationCategory string
 
 const (
-	OperationCategoryFile   OperationCategory = "File"
-	OperationCategoryString OperationCategory = "String"
-	OperationCategoryTime   OperationCategory = "Time"
-	OperationCategoryIO     OperationCategory = "I/O"
-	OperationCategoryOS     OperationCategory = "OS"
-	OperationCategoryHTTP   OperationCategory = "HTTP"
-	OperationCategoryHash   OperationCategory = "Hash"
-	OperationCategoryMath   OperationCategory = "Math"
-	OperationCategoryAI     OperationCategory = "AI"
+	OperationCategoryFile      OperationCategory = "File"
+	OperationCategoryString    OperationCategory = "String"
+	OperationCategoryTime      OperationCategory = "Time"
+	OperationCategoryIO        OperationCategory = "I/O"
+	OperationCategoryMessaging OperationCategory = "Messaging"
+	OperationCategoryOS        OperationCategory = "OS"
+	OperationCategoryHTTP      OperationCategory = "HTTP"
+	OperationCategoryHash      OperationCategory = "Hash"
+	OperationCategoryMath      OperationCategory = "Math"
+	OperationCategoryAI        OperationCategory = "AI"
 )
