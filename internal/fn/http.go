@@ -3,78 +3,77 @@ package fn
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
-	"net/url"
 	"strings"
-	"time"
+
+	"github.com/go-resty/resty/v2"
 )
 
 type HttpReqParams struct {
 	Url     string            `json:"url" yaml:"url"`
 	Method  string            `json:"method" yaml:"method"`
 	Headers map[string]string `json:"headers" yaml:"headers"`
-	Body    json.RawMessage   `json:"body" yaml:"body"`
+	Body    any               `json:"body" yaml:"body"`
 }
 
 func (f *Fn) HttpReq(j json.RawMessage) (json.RawMessage, error) {
 	return handleJSON(j, func(params *HttpReqParams) (json.RawMessage, error) {
-		url, err := url.Parse(params.Url)
+		client := resty.New()
+
+		request := client.R()
+		request.SetBody(params.Body)
+		request.SetHeaders(params.Headers)
+
+		var response *resty.Response
+		var err error
+
+		switch strings.ToUpper(params.Method) {
+		case "GET":
+			response, err = request.Get(params.Url)
+			break
+		case "POST":
+			response, err = request.Post(params.Url)
+			break
+		case "PUT":
+			response, err = request.Put(params.Url)
+			break
+		case "PATCH":
+			response, err = request.Patch(params.Url)
+			break
+		case "DELETE":
+			response, err = request.Delete(params.Url)
+			break
+		case "HEAD":
+			response, err = request.Head(params.Url)
+			break
+		case "OPTIONS":
+			response, err = request.Options(params.Url)
+			break
+		default:
+			return nil, fmt.Errorf("unsupported HTTP method: %s", params.Method)
+		}
+
 		if err != nil {
-			return nil, fmt.Errorf("invalid URL: %s", err)
+			return nil, fmt.Errorf("error making HTTP request: %w", err)
 		}
 
-		client := http.Client{Timeout: time.Duration(30) * time.Second}
-		req := &http.Request{
-			Method: params.Method,
-			URL:    url,
-			Header: http.Header{},
-			Body:   io.NopCloser(strings.NewReader(string(params.Body))),
+		resp := map[string]any{
+			"status":  response.StatusCode(),
+			"headers": response.Header(),
+			"body":    string(response.Body()),
 		}
 
-		if string(params.Body) != "" {
-			req.ContentLength = int64(len(params.Body))
-		}
-
-		for key, value := range params.Headers {
-			req.Header.Set(key, value)
-		}
-
-		// add coda/version as user agent in case it is not set
-		if req.Header.Get("User-Agent") == "" {
-			req.Header.Set("User-Agent", fmt.Sprintf("coda/v%s", f.version))
-		}
-
-		resp, err := client.Do(req)
-		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
-
-		bodyBytes, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse response body: %v", err)
-		}
-
-		responseData := map[string]interface{}{
-			"statusCode": resp.StatusCode,
-			"header":     resp.Header,
-			"body":       string(bodyBytes),
-		}
-
-		if resp.Header.Get("Content-Type") == "application/json" {
-			var b = make(map[string]interface{})
-			err := json.Unmarshal(bodyBytes, &b)
-			if err != nil {
-				return nil, fmt.Errorf("failed to unmarshal response body: %s", err)
+		if response.Header().Get("Content-Type") == "application/json" {
+			var j map[string]interface{}
+			if err := json.Unmarshal(response.Body(), &j); err != nil {
+				return nil, fmt.Errorf("error unmarshalling JSON response: %w", err)
 			}
-			responseData["body"] = b
+			resp["body"] = j
 		}
 
-		if resp.StatusCode >= 400 {
-			return returnRaw(responseData), fmt.Errorf("HTTP request failed with status code %d", resp.StatusCode)
+		if response.StatusCode() >= 400 {
+			return nil, fmt.Errorf("HTTP request failed with status %d: %s", response.StatusCode(), string(response.Body()))
 		}
 
-		return returnRaw(responseData), nil
+		return returnRaw(resp), nil
 	})
 }
