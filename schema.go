@@ -123,7 +123,7 @@ func (s *Schema) populateSchema(version string) {
 	s.Version = version
 	s.Defs = map[string]map[string]interface{}{}
 	s.Properties.Operations = &SchemaOperationsProperty{
-		Type: "array",
+		Type: "object",
 	}
 
 	// Collect all specific operation definitions
@@ -171,16 +171,19 @@ func (s *Schema) populateSchema(version string) {
 					"type":  "string",
 					"const": operation.Name,
 				},
-				"store": map[string]interface{}{
+				"entrypoint": map[string]string{
+					"type": "boolean",
+				},
+				"store": map[string]string{
 					"type": "string",
 				},
-				"onFail": map[string]interface{}{
-					"type": "array",
-					"items": map[string]interface{}{
-						"$ref": "#/$defs/Operation",
-					},
+				"onSuccess": map[string]string{
+					"type": "string",
 				},
-				"async": map[string]interface{}{
+				"onFail": map[string]string{
+					"type": "string",
+				},
+				"async": map[string]string{
 					"type": "boolean",
 				},
 			},
@@ -223,7 +226,10 @@ func (s *Schema) populateSchema(version string) {
 
 	// Final unified Operation definition
 	s.Defs["Operation"] = map[string]interface{}{
-		"anyOf": unifiedAnyOf,
+		"type": "object",
+		"additionalProperties": map[string]interface{}{
+			"anyOf": unifiedAnyOf,
+		},
 	}
 
 	// Assign operations.items to $ref Operation

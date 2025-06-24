@@ -18,6 +18,17 @@ func (c *Coda) GetOperations() map[string]*OperationHandler {
 }
 
 var operations = map[string]*OperationHandler{
+	"string": {
+		Fn: func(c *Coda, params json.RawMessage) (json.RawMessage, error) {
+			return c.fn.String(params)
+		},
+		Name:        "string",
+		Description: "Returns a given string",
+		Category:    OperationCategoryString,
+		Parameters: []OperationParameter{
+			{Name: "value", Description: "The value to return", Type: "string", Mandatory: true},
+		},
+	},
 	"message.shoutrrr": {
 		Fn: func(c *Coda, params json.RawMessage) (json.RawMessage, error) {
 			return c.fn.Shoutrrr(params)

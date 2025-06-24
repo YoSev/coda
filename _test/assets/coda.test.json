@@ -1,9 +1,9 @@
 {
-    "coda": {
-        "logs":true,
-        "stats": true,
-        "extended": false
-    },
+  "coda": {
+    "logs": true,
+    "stats": true,
+    "extended": false
+  },
   "store": {
     "username": "John Doe The Greatest",
     "url": "https://api.ipify.org?format=json",
@@ -14,8 +14,8 @@
       "notifications": true
     }
   },
-  "operations": [
-    {
+  "operations": {
+    "uptime": {
       "action": "os.exec",
       "params": {
         "command": "/usr/bin/uptime",
@@ -24,7 +24,7 @@
       "store": "exec",
       "async": true
     },
-    {
+    "ip": {
       "action": "http.request",
       "params": {
         "url": "${store.url}",
@@ -35,53 +35,38 @@
         "body": 3,
         "method": "GET"
       },
-      "onFail": [
-        {
-          "action": "http.request",
-          "params": {
-            "url": "${store.url}",
-            "headers": {
-              "X-User-Agent": "coda",
-              "Content-Type": "application/json"
-            },
-            "method": "GET"
-          },
-          "async": true,
-          "store": "apiResponse"
-        }
-      ],
       "async": true,
       "store": "apiResponse"
     },
-    {
+    "kebap": {
       "action": "string.kebap",
       "params": {
         "value": "${store.username}"
       },
       "store": "username"
     },
-    {
+    "upper": {
       "action": "string.upper",
       "params": {
         "value": "${store.username}"
       },
       "store": "username"
     },
-    {
+    "fileSize": {
       "action": "file.size",
       "params": {
         "source": "${store.file.source}"
       },
       "store": "filesize"
     },
-    {
+    "fileModified": {
       "action": "file.modified",
       "params": {
         "source": "${store.file.source}"
       },
       "store": "modtime"
     },
-    {
+    "fileCopy": {
       "action": "file.copy",
       "params": {
         "source": "${store.file.source}",
@@ -89,13 +74,13 @@
       },
       "store": "destination"
     },
-    {
+    "timeSleep": {
       "action": "time.sleep",
       "params": {
         "value": 10
       }
     },
-    {
+    "fileMove": {
       "action": "file.move",
       "params": {
         "source": "${store.file.source}.copy",
@@ -103,64 +88,64 @@
       },
       "store": "destination"
     },
-    {
+    "timeSleep2": {
       "action": "time.sleep",
       "params": {
         "value": 10
       }
     },
-    {
+    "fileRead": {
       "action": "file.read",
       "params": {
         "source": "${store.file.source}.copy.again"
       },
       "store": "fileContent"
     },
-    {
+    "fileDelete": {
       "action": "file.delete",
       "params": {
         "source": "${store.file.source}.copy.again"
       }
     },
-    {
+    "fileDelete2": {
       "action": "file.delete",
       "params": {
         "source": "${store.file.source}.write"
       }
     },
-    {
+    "timeDuration": {
       "action": "time.datetime",
       "params": {
         "value": "2006-01-02 15:04:05"
       },
       "store": "dt"
     },
-    {
+    "timestampMicro": {
       "action": "time.timestamp.micro",
       "store": "ts"
     },
-    {
+    "hashSha256": {
       "action": "hash.sha512",
       "params": {
         "value": "${store.ts | string}"
       },
       "store": "tsHashed"
     },
-    {
+    "hasBase64": {
       "action": "hash.base64.encode",
       "params": {
         "value": "${store.tsHashed}"
       },
       "store": "tsHashed"
     },
-    {
+    "envGet": {
       "action": "os.env.get",
       "params": {
         "value": "ZSH"
       },
       "store": "env"
     },
-    {
+    "stringSplit": {
       "action": "string.split",
       "params": {
         "value": "${store.env}",
@@ -168,7 +153,7 @@
       },
       "store": "envSplitted"
     },
-    {
+    "stringJoin": {
       "action": "string.join",
       "params": {
         "value": "${store.envSplitted}",
@@ -176,22 +161,22 @@
       },
       "store": "envJoined"
     },
-    {
+    "osName": {
       "action": "os.name",
       "store": "os"
     },
-    {
+    "stringReverse": {
       "action": "string.reverse",
       "params": {
         "value": "${store.os}"
       },
       "store": "osReversed"
     },
-    {
+    "osArch": {
       "action": "os.arch",
       "store": "arch"
     },
-    {
+    "mathDivide": {
       "action": "math.divide",
       "params": {
         "value": 100,
@@ -199,7 +184,7 @@
       },
       "store": "amount"
     },
-    {
+    "mathModulo": {
       "action": "math.modulo",
       "async": true,
       "params": {
@@ -208,12 +193,12 @@
       },
       "store": "amount"
     },
-    {
+    "ioStderr": {
       "action": "io.stderr",
       "async": true,
       "params": {
         "value": "uptime: ${store.exec.stdout}\nip: ${store.apiResponse.body.ip | split:. | join::}\nfileContentMd5: ${store.fileContent | sha512 | sha256 | sha1 | md5}\nusername: ${store.username}\nnotifications: ${store.preferences.notifications}\nfilesize: ${store.filesize}b\nmodtime: ${store.modtime}\ndatetime: ${store.dt}\ntimestamp: ${store.ts}\nhashedTimestamp: ${store.tsHashed}\nenv: ${store.env}\nenvSplitted: ${store.envSplitted}\nenvJoined: ${store.envSplitted | join:/}\nos: ${store.os}\nosReversed: ${store.osReversed}\narch: ${store.arch | lower | upper}\nmath: ${store.amount}"
       }
     }
-  ]
+  }
 }

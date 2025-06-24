@@ -29,25 +29,18 @@ func (f *Fn) HttpReq(j json.RawMessage) (json.RawMessage, error) {
 		switch strings.ToUpper(params.Method) {
 		case "GET":
 			response, err = request.Get(params.Url)
-			break
 		case "POST":
 			response, err = request.Post(params.Url)
-			break
 		case "PUT":
 			response, err = request.Put(params.Url)
-			break
 		case "PATCH":
 			response, err = request.Patch(params.Url)
-			break
 		case "DELETE":
 			response, err = request.Delete(params.Url)
-			break
 		case "HEAD":
 			response, err = request.Head(params.Url)
-			break
 		case "OPTIONS":
 			response, err = request.Options(params.Url)
-			break
 		default:
 			return nil, fmt.Errorf("unsupported HTTP method: %s", params.Method)
 		}

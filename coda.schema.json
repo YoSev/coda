@@ -25,12 +25,10 @@
       "required": []
     },
     "operations": {
-      "type": "array",
-      "items": {
-        "anyOf": []
-      },
+      "type": "object",
+      "additionalProperties": true,
       "required": []
     }
   },
-  "additionalProperties": false 
+  "additionalProperties": false
 }

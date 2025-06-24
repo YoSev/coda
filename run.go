@@ -9,53 +9,53 @@ import (
 
 func (c *Coda) run() error {
 	start := time.Now()
-	c.debug(fmt.Sprintf("found %d operations", len(c.Operations)))
-	lastOp, ops, err := c.runOperations(c.Operations)
 	defer func() {
 		since := time.Since(start)
-		c.debug(fmt.Sprintf("executed %d operations after %s", ops, since))
 		c.Stats.CodaRuntimeTotalMs += float64(since.Milliseconds())
 	}()
 
-	if err != nil {
-		return fmt.Errorf("failed to execute node '%s': %s", lastOp.Action, err)
+	if startUid, err := c.findEntrypoint(); err != nil {
+		return err
+	} else {
+		if err := c.validateLinks(); err != nil {
+			return fmt.Errorf("failed to validate links: %s", err)
+		} else {
+			c.debug(fmt.Sprintf("found %d operations", len(c.Operations)))
+			lastUid, err := c.runOperations(startUid)
+			if err != nil {
+				return fmt.Errorf("failed to execute node '%s': %s", lastUid, err)
+			}
+		}
+
 	}
 
 	return nil
 }
 
-func (c *Coda) runOperations(ops []Operation) (Operation, int64, error) {
-	var count int64 = 0
-	for _, op := range ops {
-		count++
-		if err := c.executeOperation(op); err != nil {
+func (c *Coda) runOperations(uid string) (string, error) {
+	for uid != "" {
+		op, ok := c.Operations[uid]
+		if !ok {
+			return uid, fmt.Errorf("operation with UID %s not found", uid)
+		}
+
+		err := c.executeOperation(op)
+		if err != nil {
 			c.Stats.OperationsFailedTotal++
-			// TODO check why wrong operation action/name is being returned
-			// failed to run coda: failed to execute node 'io.stdout': category of operation 'file.size' is disabled (File)
-
-			// check for blacklisted error and if so, do not apply onFail
-			if strings.Contains(err.Error(), "is blacklisted") {
-				return op, count, err
+			if op.OnFail == "" {
+				return uid, err
 			}
-
-			// check for on-fail operations
-			if len(op.OnFail) > 0 {
-				n, c, err := c.runOperations(op.OnFail)
-				count += c
-				if err != nil {
-					return n, count, err
-				}
-			} else {
-				return ops[len(ops)-1], count, err
-			}
+			uid = op.OnFail
 		} else {
 			c.Stats.OperationsSuccessfulTotal++
+			if op.OnSuccess == "" {
+				return uid, nil
+			}
+			uid = op.OnSuccess
 		}
 	}
-	if len(ops) > 0 {
-		return ops[len(ops)-1], count, nil
-	}
-	return Operation{}, count, nil
+
+	return uid, nil
 }
 
 func (c *Coda) executeOperation(op Operation) error {

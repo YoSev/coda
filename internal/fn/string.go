@@ -93,6 +93,12 @@ func (f *Fn) StringResolve(j json.RawMessage) (json.RawMessage, error) {
 	})
 }
 
+func (f *Fn) String(j json.RawMessage) (json.RawMessage, error) {
+	return handleJSON(j, func(params *stringParams) (json.RawMessage, error) {
+		return returnRaw(params.Value), nil
+	})
+}
+
 func (f *Fn) JsonEncode(j json.RawMessage) (json.RawMessage, error) {
 	return handleJSON(j, func(params *anyParams) (json.RawMessage, error) {
 		out, err := json.Marshal(params.Value)

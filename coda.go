@@ -29,11 +29,13 @@ type CodaSettings struct {
 
 // Operation is a single operation to be executed
 type Operation struct {
-	Action string          `json:"action" yaml:"action"`                     // mandatory
-	Params json.RawMessage `json:"params,omitempty" yaml:"params,omitempty"` // optional
-	Store  string          `json:"store,omitempty" yaml:"store,omitempty"`   // optional
-	OnFail []Operation     `json:"onFail,omitempty" yaml:"onFail,omitempty"` // optional
-	Async  bool            `json:"async,omitempty" yaml:"async,omitempty"`   // optional
+	Entrypoint bool            `json:"entrypoint,omitempty" yaml:"entrypoint,omitempty"` // optional
+	Action     string          `json:"action" yaml:"action"`                             // mandatory
+	Params     json.RawMessage `json:"params,omitempty" yaml:"params,omitempty"`         // optional
+	Store      string          `json:"store,omitempty" yaml:"store,omitempty"`           // optional
+	OnSuccess  string          `json:"onSuccess,omitempty" yaml:"onSuccess,omitempty"`   // optional
+	OnFail     string          `json:"onFail,omitempty" yaml:"onFail,omitempty"`         // optional
+	Async      bool            `json:"async,omitempty" yaml:"async,omitempty"`           // optional
 }
 
 type source string
@@ -50,7 +52,7 @@ type Coda struct {
 	Stats      *CodaStats                 `json:"stats,omitempty" yaml:"stats,omitempty"` // optional
 	Store      map[string]json.RawMessage `json:"store" yaml:"store"`
 	Secrets    map[string]json.RawMessage `json:"secrets" yaml:"secrets"`
-	Operations []Operation                `json:"operations,omitempty" yaml:"operations,omitempty"` // mandatory
+	Operations map[string]Operation       `json:"operations,omitempty" yaml:"operations,omitempty"` // mandatory
 
 	fn        *fn.Fn
 	source    source
@@ -63,7 +65,7 @@ type codaDTO struct {
 	Logs       []string                   `json:"logs,omitempty" yaml:"logs,omitempty"`
 	Stats      *CodaStats                 `json:"stats,omitempty" yaml:"stats,omitempty"`
 	Store      map[string]json.RawMessage `json:"store" yaml:"store"`
-	Operations []Operation                `json:"operations,omitempty" yaml:"operations,omitempty"`
+	Operations map[string]Operation       `json:"operations,omitempty" yaml:"operations,omitempty"`
 }
 
 // New creates a new Coda instance with default settings
@@ -158,7 +160,7 @@ func new() *Coda {
 		},
 		Logs:       []string{},
 		Store:      make(map[string]json.RawMessage),
-		Operations: []Operation{},
+		Operations: make(map[string]Operation),
 
 		blacklist: []OperationCategory{},
 		fn:        fn.New(VERSION),
