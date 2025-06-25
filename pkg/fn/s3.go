@@ -14,7 +14,48 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/yosev/coda/internal/utils"
 )
+
+type fnS3 struct {
+	category FnCategory
+}
+
+func (f *fnS3) init(fn *Fn) {
+	fn.register("s3.upload", &FnEntry{
+		Handler:     f.upload,
+		Name:        "Upload to S3",
+		Description: "Uploads a file or folder to an S3-compatible bucket",
+		Category:    f.category,
+		Parameters: []FnParameter{
+			{Name: "endpoint", Description: "The S3 endpoint to use", Mandatory: true},
+			{Name: "bucket", Description: "The S3 bucket to use", Mandatory: true},
+			{Name: "region", Description: "The S3 region to use", Mandatory: true},
+			{Name: "key_id", Description: "The S3 key ID to use", Mandatory: true},
+			{Name: "key_secret", Description: "The S3 key secret to use", Mandatory: true},
+			{Name: "local_path", Description: "The local path to upload", Mandatory: true},
+			{Name: "remote_path", Description: "The remote path in the S3 bucket", Mandatory: false},
+			{Name: "remote_prefix", Description: "The remote prefix in the S3 bucket (for recursive upload)", Mandatory: false},
+			{Name: "invisible_files", Description: "If true, invisible files will be uploaded", Type: "boolean", Mandatory: false},
+		},
+	})
+
+	fn.register("s3.download", &FnEntry{
+		Handler:     f.download,
+		Name:        "Download from S3",
+		Description: "Downloads a file or folder from S3 to the local filesystem",
+		Category:    f.category,
+		Parameters: []FnParameter{
+			{Name: "endpoint", Description: "The S3 endpoint to use", Mandatory: true},
+			{Name: "bucket", Description: "The S3 bucket to use", Mandatory: true},
+			{Name: "region", Description: "The S3 region to use", Mandatory: true},
+			{Name: "key_id", Description: "The S3 key ID to use", Mandatory: true},
+			{Name: "key_secret", Description: "The S3 key secret to use", Mandatory: true},
+			{Name: "local_path", Description: "The local path to download to", Mandatory: true},
+			{Name: "remote_path", Description: "The remote path in the S3 bucket", Mandatory: false},
+		},
+	})
+}
 
 type s3Params struct {
 	Endpoint  string `json:"endpoint" yaml:"endpoint"`
@@ -31,8 +72,8 @@ type s3Params struct {
 }
 
 // UploadToS3 uploads a single file or folder to an S3-compatible bucket
-func (f *Fn) UploadToS3(j json.RawMessage) (json.RawMessage, error) {
-	return handleJSON(j, func(params *s3Params) (json.RawMessage, error) {
+func (f *fnS3) upload(j json.RawMessage) (json.RawMessage, error) {
+	return utils.HandleJSON(j, func(params *s3Params) (json.RawMessage, error) {
 		client, err := buildS3Client(params)
 		if err != nil {
 			return nil, err
@@ -96,8 +137,8 @@ func (f *Fn) UploadToS3(j json.RawMessage) (json.RawMessage, error) {
 }
 
 // DownloadFromS3 downloads a file or folder from S3 to the local filesystem
-func (f *Fn) DownloadFromS3(j json.RawMessage) (json.RawMessage, error) {
-	return handleJSON(j, func(params *s3Params) (json.RawMessage, error) {
+func (f *fnS3) download(j json.RawMessage) (json.RawMessage, error) {
+	return utils.HandleJSON(j, func(params *s3Params) (json.RawMessage, error) {
 		client, err := buildS3Client(params)
 		if err != nil {
 			return nil, err

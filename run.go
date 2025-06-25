@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/yosev/coda/pkg/fn"
 )
 
 func (c *Coda) run() error {
@@ -59,7 +61,7 @@ func (c *Coda) runOperations(uid string) (string, error) {
 }
 
 func (c *Coda) executeOperation(op Operation) error {
-	if action, ok := operations[op.Action]; !ok {
+	if action, ok := fns.GetFns()[op.Action]; !ok {
 		return fmt.Errorf("unknown action: %s", op.Action)
 	} else {
 		if c.isBlacklisted(action.Category) {
@@ -81,7 +83,7 @@ func (c *Coda) executeOperation(op Operation) error {
 		op.Params = p
 
 		execWithLock := func() error {
-			result, err := action.Fn(c, op.Params)
+			result, err := action.Handler(op.Params)
 			if err != nil {
 				return err
 			}
@@ -173,7 +175,7 @@ func (c *Coda) storeNestedJSONValue(path string, value json.RawMessage) error {
 	return nil
 }
 
-func (c *Coda) isBlacklisted(category OperationCategory) bool {
+func (c *Coda) isBlacklisted(category fn.FnCategory) bool {
 	if len(c.blacklist) == 0 {
 		return false
 	}

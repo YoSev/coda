@@ -8,11 +8,13 @@ func TestShoutrrr(t *testing.T) {
 	var result []byte
 
 	f = New("0.0.0")
+	fn := &fnMessage{category: FnCategoryMessaging}
+	fn.init(f)
 
 	// Example JSON input for Shoutrrr function
 	jsonInput := `{"urls": ["telegram://123456789:TESTTOKEN987@telegram?chats=416898072"], "message": "Hello, *Shoutrrr*!", "parameters": {"parsemode": "markdown"}}`
 
-	result, err = f.Shoutrrr([]byte(jsonInput))
+	result, err = fn.shoutrrr([]byte(jsonInput))
 	if err == nil {
 		t.Fatalf("expected Unauthorized error: %v", err)
 	}

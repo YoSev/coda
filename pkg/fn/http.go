@@ -6,7 +6,30 @@ import (
 	"strings"
 
 	"github.com/go-resty/resty/v2"
+	"github.com/yosev/coda/internal/utils"
 )
+
+type fnHttp struct {
+	*Fn
+	category FnCategory
+}
+
+func (f *fnHttp) init(fn *Fn) {
+	f.Fn = fn
+
+	fn.register("http.request", &FnEntry{
+		Handler:     f.httpReq,
+		Name:        "HTTP Request",
+		Description: "Performs an HTTP request",
+		Category:    f.category,
+		Parameters: []FnParameter{
+			{Name: "url", Description: "The url to query", Mandatory: true},
+			{Name: "method", Description: "The HTTP method to use", Enum: []string{"GET", "POST", "PUT", "PATCH", "DELETE"}, Mandatory: true},
+			{Name: "headers", Description: "The Headers to use", Type: "object", Mandatory: false},
+			{Name: "body", Description: "The Body to use", Type: "any", Mandatory: false},
+		},
+	})
+}
 
 type HttpReqParams struct {
 	Url     string            `json:"url" yaml:"url"`
@@ -15,8 +38,8 @@ type HttpReqParams struct {
 	Body    any               `json:"body" yaml:"body"`
 }
 
-func (f *Fn) HttpReq(j json.RawMessage) (json.RawMessage, error) {
-	return handleJSON(j, func(params *HttpReqParams) (json.RawMessage, error) {
+func (f *fnHttp) httpReq(j json.RawMessage) (json.RawMessage, error) {
+	return utils.HandleJSON(j, func(params *HttpReqParams) (json.RawMessage, error) {
 		client := resty.New()
 
 		request := client.R()
@@ -25,6 +48,10 @@ func (f *Fn) HttpReq(j json.RawMessage) (json.RawMessage, error) {
 
 		var response *resty.Response
 		var err error
+
+		if _, ok := params.Headers["User-Agent"]; !ok {
+			request.SetHeader("User-Agent", fmt.Sprintf("coda/%s", f.Fn.version))
+		}
 
 		switch strings.ToUpper(params.Method) {
 		case "GET":
@@ -67,6 +94,6 @@ func (f *Fn) HttpReq(j json.RawMessage) (json.RawMessage, error) {
 			return nil, fmt.Errorf("HTTP request failed with status %d: %s", response.StatusCode(), string(response.Body()))
 		}
 
-		return returnRaw(resp), nil
+		return utils.ReturnRaw(resp), nil
 	})
 }

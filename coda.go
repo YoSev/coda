@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/yosev/coda/internal/fn"
+	"github.com/yosev/coda/pkg/fn"
 	"sigs.k8s.io/yaml"
 
 	_ "embed"
@@ -14,6 +14,8 @@ import (
 
 //go:embed .version
 var VERSION string
+
+var fns = fn.New(VERSION)
 
 // CodaSettings contains the settings for the coda engine
 type CodaSettings struct {
@@ -54,10 +56,10 @@ type Coda struct {
 	Secrets    map[string]json.RawMessage `json:"secrets" yaml:"secrets"`
 	Operations map[string]Operation       `json:"operations,omitempty" yaml:"operations,omitempty"` // mandatory
 
-	fn        *fn.Fn
+	Fn        *fn.Fn
 	source    source
 	mutex     sync.RWMutex
-	blacklist []OperationCategory `json:"-" yaml:"-"`
+	blacklist []fn.FnCategory `json:"-" yaml:"-"`
 }
 
 type codaDTO struct {
@@ -110,7 +112,7 @@ func (c *Coda) Marshal() ([]byte, error) {
 }
 
 // Blacklist categories of operations for this run
-func (c *Coda) Blacklist(category OperationCategory) {
+func (c *Coda) Blacklist(category fn.FnCategory) {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
 	c.blacklist = append(c.blacklist, category)
@@ -162,8 +164,8 @@ func new() *Coda {
 		Store:      make(map[string]json.RawMessage),
 		Operations: make(map[string]Operation),
 
-		blacklist: []OperationCategory{},
-		fn:        fn.New(VERSION),
+		Fn:        fns,
+		blacklist: []fn.FnCategory{},
 		mutex:     sync.RWMutex{},
 	}
 	c.Stats = c.newStats()
