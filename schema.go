@@ -129,7 +129,7 @@ func (s *Schema) populateSchema(version string) {
 	// Collect all specific operation definitions
 	unifiedAnyOf := []map[string]interface{}{}
 
-	for _, operation := range New().GetOperations() {
+	for _, operation := range operations {
 		paramDefinitions := map[string]SchemaOperationParams{}
 		requiredParamNames := []string{}
 

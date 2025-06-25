@@ -4,31 +4,7 @@ import (
 	"encoding/json"
 )
 
-type OperationParameter struct {
-	Name        string   `json:"name" yaml:"name"`
-	Description string   `json:"description" yaml:"description"`
-	Mandatory   bool     `json:"mandatory" yaml:"mandatory"`
-	Type        string   `json:"type" yaml:"type"`
-	Enum        []string `json:"enum,omitempty" yaml:"enum,omitempty"`
-}
-
-// Get a list of all operations available in the Coda engine
-func (c *Coda) GetOperations() map[string]*OperationHandler {
-	return operations
-}
-
 var operations = map[string]*OperationHandler{
-	"string": {
-		Fn: func(c *Coda, params json.RawMessage) (json.RawMessage, error) {
-			return c.fn.String(params)
-		},
-		Name:        "string",
-		Description: "Returns a given string",
-		Category:    OperationCategoryString,
-		Parameters: []OperationParameter{
-			{Name: "value", Description: "The value to return", Type: "string", Mandatory: true},
-		},
-	},
 	"message.shoutrrr": {
 		Fn: func(c *Coda, params json.RawMessage) (json.RawMessage, error) {
 			return c.fn.Shoutrrr(params)
@@ -168,6 +144,17 @@ var operations = map[string]*OperationHandler{
 		Category:    OperationCategoryIO,
 		Parameters: []OperationParameter{
 			{Name: "value", Description: "The value to print", Mandatory: true},
+		},
+	},
+	"string": {
+		Fn: func(c *Coda, params json.RawMessage) (json.RawMessage, error) {
+			return c.fn.String(params)
+		},
+		Name:        "string",
+		Description: "Returns a given string",
+		Category:    OperationCategoryString,
+		Parameters: []OperationParameter{
+			{Name: "value", Description: "The value to return", Type: "string", Mandatory: true},
 		},
 	},
 	"string.upper": {
@@ -356,6 +343,7 @@ var operations = map[string]*OperationHandler{
 		},
 		Name:        "file.move",
 		Description: "Move a file",
+		Category:    OperationCategoryFile,
 		Parameters: []OperationParameter{
 			{Name: "source", Description: "The path of the file to move", Mandatory: true},
 			{Name: "destination", Description: "The path of the destination", Mandatory: true},
@@ -448,7 +436,7 @@ var operations = map[string]*OperationHandler{
 		},
 		Name:        "hash.md5",
 		Description: "Encode to MD5",
-		Category:    OperationCategoryTime,
+		Category:    OperationCategoryHash,
 		Parameters: []OperationParameter{
 			{Name: "value", Description: "The string to hash", Mandatory: true},
 		},
@@ -459,7 +447,7 @@ var operations = map[string]*OperationHandler{
 		},
 		Name:        "hash.sha1",
 		Description: "Encode to Sha1",
-		Category:    OperationCategoryTime,
+		Category:    OperationCategoryHash,
 		Parameters: []OperationParameter{
 			{Name: "value", Description: "The string to hash", Mandatory: true},
 		},
@@ -470,7 +458,7 @@ var operations = map[string]*OperationHandler{
 		},
 		Name:        "hash.sha256",
 		Description: "Encode to Sha256",
-		Category:    OperationCategoryTime,
+		Category:    OperationCategoryHash,
 		Parameters: []OperationParameter{
 			{Name: "value", Description: "The string to hash", Mandatory: true},
 		},
@@ -481,7 +469,7 @@ var operations = map[string]*OperationHandler{
 		},
 		Name:        "hash.sha512",
 		Description: "Encode to Sha512",
-		Category:    OperationCategoryTime,
+		Category:    OperationCategoryHash,
 		Parameters: []OperationParameter{
 			{Name: "value", Description: "The string to hash", Mandatory: true},
 		},
@@ -492,7 +480,7 @@ var operations = map[string]*OperationHandler{
 		},
 		Name:        "hash.base64.encode",
 		Description: "Encode to Base64",
-		Category:    OperationCategoryTime,
+		Category:    OperationCategoryHash,
 		Parameters: []OperationParameter{
 			{Name: "value", Description: "The string to encode", Mandatory: true},
 		},
@@ -503,7 +491,7 @@ var operations = map[string]*OperationHandler{
 		},
 		Name:        "hash.base64.decode",
 		Description: "Decode from Base64",
-		Category:    OperationCategoryTime,
+		Category:    OperationCategoryHash,
 		Parameters: []OperationParameter{
 			{Name: "value", Description: "The string to decode", Mandatory: true},
 		},
@@ -569,26 +557,3 @@ var operations = map[string]*OperationHandler{
 		},
 	},
 }
-
-type OperationHandler struct {
-	Fn          func(*Coda, json.RawMessage) (json.RawMessage, error)
-	Name        string
-	Description string
-	Category    OperationCategory
-	Parameters  []OperationParameter
-}
-
-type OperationCategory string
-
-const (
-	OperationCategoryFile      OperationCategory = "File"
-	OperationCategoryString    OperationCategory = "String"
-	OperationCategoryTime      OperationCategory = "Time"
-	OperationCategoryIO        OperationCategory = "I/O"
-	OperationCategoryMessaging OperationCategory = "Messaging"
-	OperationCategoryOS        OperationCategory = "OS"
-	OperationCategoryHTTP      OperationCategory = "HTTP"
-	OperationCategoryHash      OperationCategory = "Hash"
-	OperationCategoryMath      OperationCategory = "Math"
-	OperationCategoryAI        OperationCategory = "AI"
-)
