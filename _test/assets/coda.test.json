@@ -16,12 +16,14 @@
   },
   "operations": {
     "uptime": {
+      "entrypoint": true,
       "action": "os.exec",
       "params": {
         "command": "/usr/bin/uptime",
         "arguments": []
       },
       "store": "exec",
+      "onSuccess": "ip",
       "async": true
     },
     "ip": {
@@ -36,6 +38,7 @@
         "method": "GET"
       },
       "async": true,
+      "onSuccess": "kebap",
       "store": "apiResponse"
     },
     "kebap": {
@@ -43,6 +46,7 @@
       "params": {
         "value": "${store.username}"
       },
+      "onSuccess": "upper",
       "store": "username"
     },
     "upper": {
@@ -50,6 +54,7 @@
       "params": {
         "value": "${store.username}"
       },
+      "onSuccess": "fileSize",
       "store": "username"
     },
     "fileSize": {
@@ -57,6 +62,7 @@
       "params": {
         "source": "${store.file.source}"
       },
+      "onSuccess": "fileModified",
       "store": "filesize"
     },
     "fileModified": {
@@ -64,6 +70,7 @@
       "params": {
         "source": "${store.file.source}"
       },
+      "onSuccess": "fileCopy",
       "store": "modtime"
     },
     "fileCopy": {
@@ -72,13 +79,15 @@
         "source": "${store.file.source}",
         "destination": "${store.file.source}.copy"
       },
+      "onSuccess": "timeSleep",
       "store": "destination"
     },
     "timeSleep": {
       "action": "time.sleep",
       "params": {
         "value": 10
-      }
+      },
+      "onSuccess": "fileMove"
     },
     "fileMove": {
       "action": "file.move",
@@ -86,42 +95,49 @@
         "source": "${store.file.source}.copy",
         "destination": "${store.file.source}.copy.again"
       },
+      "onSuccess": "timeSleep2",
       "store": "destination"
     },
     "timeSleep2": {
       "action": "time.sleep",
       "params": {
         "value": 10
-      }
+      },
+      "onSuccess": "fileRead"
     },
     "fileRead": {
       "action": "file.read",
       "params": {
         "source": "${store.file.source}.copy.again"
       },
+      "onSuccess": "fileDelete",
       "store": "fileContent"
     },
     "fileDelete": {
       "action": "file.delete",
       "params": {
         "source": "${store.file.source}.copy.again"
-      }
+      },
+      "onSuccess": "fileDelete2"
     },
     "fileDelete2": {
       "action": "file.delete",
       "params": {
         "source": "${store.file.source}.write"
-      }
+      },
+      "onSuccess": "timeDuration"
     },
     "timeDuration": {
       "action": "time.datetime",
       "params": {
         "value": "2006-01-02 15:04:05"
       },
+      "onSuccess": "timestampMicro",
       "store": "dt"
     },
     "timestampMicro": {
       "action": "time.timestamp.micro",
+      "onSuccess": "hashSha256",
       "store": "ts"
     },
     "hashSha256": {
@@ -129,13 +145,15 @@
       "params": {
         "value": "${store.ts | string}"
       },
+      "onSuccess": "hashBase64",
       "store": "tsHashed"
     },
-    "hasBase64": {
+    "hashBase64": {
       "action": "hash.base64.encode",
       "params": {
         "value": "${store.tsHashed}"
       },
+      "onSuccess": "envGet",
       "store": "tsHashed"
     },
     "envGet": {
@@ -143,6 +161,7 @@
       "params": {
         "value": "ZSH"
       },
+      "onSuccess": "stringSplit",
       "store": "env"
     },
     "stringSplit": {
@@ -151,6 +170,7 @@
         "value": "${store.env}",
         "delimiter": "/"
       },
+      "onSuccess": "stringJoin",
       "store": "envSplitted"
     },
     "stringJoin": {
@@ -159,22 +179,26 @@
         "value": "${store.envSplitted}",
         "delimiter": "/"
       },
+      "onSuccess": "osName",
       "store": "envJoined"
     },
     "osName": {
       "action": "os.name",
-      "store": "os"
+      "store": "os",
+      "onSuccess": "stringReverse"
     },
     "stringReverse": {
       "action": "string.reverse",
       "params": {
         "value": "${store.os}"
       },
+      "onSuccess": "osArch",
       "store": "osReversed"
     },
     "osArch": {
       "action": "os.arch",
-      "store": "arch"
+      "store": "arch",
+      "onSuccess": "mathDivide"
     },
     "mathDivide": {
       "action": "math.divide",
@@ -182,6 +206,7 @@
         "value": 100,
         "amount": 2
       },
+      "onSuccess": "mathModulo",
       "store": "amount"
     },
     "mathModulo": {
@@ -191,6 +216,7 @@
         "value": 100,
         "amount": 32.123
       },
+      "onSuccess": "ioStderr",
       "store": "amount"
     },
     "ioStderr": {
