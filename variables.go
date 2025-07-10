@@ -158,6 +158,28 @@ func applySingleFilter(val any, filter Filter) any {
 			parts[i] = fmt.Sprintf("%v", rVal.Index(i).Interface())
 		}
 		return strings.Join(parts, del)
+	case "replace":
+		if filter.Arg == "" {
+			return val
+		}
+		parts := strings.SplitN(filter.Arg, ":", 2)
+		if len(parts) != 2 {
+			return val
+		}
+		old := parts[0]
+		new := parts[1]
+		if s, ok := val.(string); ok {
+			return strings.ReplaceAll(s, old, new)
+		}
+		if arr, ok := val.([]any); ok {
+			for i, item := range arr {
+				if strItem, ok := item.(string); ok {
+					arr[i] = strings.ReplaceAll(strItem, old, new)
+				}
+			}
+			return arr
+		}
+		return val
 	case "upper":
 		if s, ok := val.(string); ok {
 			return strings.ToUpper(s)
