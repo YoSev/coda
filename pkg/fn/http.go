@@ -83,9 +83,9 @@ func (f *fnHttp) httpReq(j json.RawMessage) (json.RawMessage, error) {
 		}
 
 		if response.Header().Get("Content-Type") == "application/json" {
-			var j map[string]interface{}
+			var j json.RawMessage
 			if err := json.Unmarshal(response.Body(), &j); err != nil {
-				return nil, fmt.Errorf("error unmarshalling JSON response: %w", err)
+				return nil, fmt.Errorf("error unmarshaling JSON response: %w", err)
 			}
 			resp["body"] = j
 		}
