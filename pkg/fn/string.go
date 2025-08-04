@@ -2,6 +2,8 @@ package fn
 
 import (
 	"encoding/json"
+	"errors"
+	"regexp"
 	"strings"
 
 	"github.com/iancoleman/strcase"
@@ -13,6 +15,30 @@ type fnString struct {
 }
 
 func (f *fnString) init(fn *Fn) {
+	fn.register("string.match.regex", &FnEntry{
+		Handler:     f.matchRegex,
+		Name:        "Match Regex String",
+		Description: "Checks if a string matches a regex pattern",
+		Category:    f.category,
+		Parameters: []FnParameter{
+			{Name: "value", Description: "The string to match", Mandatory: true},
+			{Name: "regex", Description: "The regex pattern to match", Mandatory: true},
+		},
+	})
+
+	fn.register("string.match", &FnEntry{
+		Handler:     f.match,
+		Name:        "Match String",
+		Description: "Checks if a string matches a pattern",
+		Category:    f.category,
+		Parameters: []FnParameter{
+			{Name: "value", Description: "The string to match", Mandatory: true},
+			{Name: "comparator", Description: "The comparator to match", Mandatory: true},
+			{Name: "match", Description: "The string to match against", Mandatory: true},
+			{Name: "case_sensitive", Description: "Whether the match should be case sensitive", Mandatory: false},
+		},
+	})
+
 	fn.register("string.upper", &FnEntry{
 		Handler:     f.upperCase,
 		Name:        "Uppercase",
@@ -147,12 +173,91 @@ func (f *fnString) init(fn *Fn) {
 	})
 }
 
+type Comparator string
+
+const (
+	Equal         Comparator = "equal"
+	NotEqual      Comparator = "not_equal"
+	Contains      Comparator = "contains"
+	NotContains   Comparator = "not_contains"
+	StartsWith    Comparator = "starts_with"
+	NotStartsWith Comparator = "not_starts_with"
+	EndsWith      Comparator = "ends_with"
+	NotEndsWith   Comparator = "not_ends_with"
+	Empty         Comparator = "empty"
+	NotEmpty      Comparator = "not_empty"
+)
+
 type anyParams struct {
 	Value any `json:"value" yaml:"value"`
 }
 
 type stringParams struct {
 	Value string `json:"value" yaml:"value"`
+}
+
+type compareParams struct {
+	Value         string     `json:"value" yaml:"value"`
+	Comparator    Comparator `json:"comparator" yaml:"comparator"`
+	Match         string     `json:"match" yaml:"match"`
+	CaseSensitive bool       `json:"case_sensitive" yaml:"case_sensitive"`
+}
+
+type compareRegexParams struct {
+	Value string `json:"value" yaml:"value"`
+	Regex string `json:"regex" yaml:"regex"`
+}
+
+func (f *fnString) matchRegex(j json.RawMessage) (json.RawMessage, error) {
+	return utils.HandleJSON(j, func(params *compareRegexParams) (json.RawMessage, error) {
+		matched, err := regexp.MatchString(params.Regex, params.Value)
+		if err != nil {
+			return nil, err
+		}
+		if !matched {
+			return nil, errors.New("source string does not match regex")
+		}
+		return utils.ReturnRaw(matched), nil
+	})
+}
+
+func (f *fnString) match(j json.RawMessage) (json.RawMessage, error) {
+	return utils.HandleJSON(j, func(params *compareParams) (json.RawMessage, error) {
+		if !params.CaseSensitive {
+			params.Value = strings.ToLower(params.Value)
+			params.Match = strings.ToLower(params.Match)
+		}
+
+		var result bool
+		switch params.Comparator {
+		case Equal:
+			result = params.Match == params.Value
+		case NotEqual:
+			result = params.Match != params.Value
+		case Contains:
+			result = strings.Contains(params.Match, params.Value)
+		case NotContains:
+			result = !strings.Contains(params.Match, params.Value)
+		case StartsWith:
+			result = strings.HasPrefix(params.Match, params.Value)
+		case NotStartsWith:
+			result = !strings.HasPrefix(params.Match, params.Value)
+		case EndsWith:
+			result = strings.HasSuffix(params.Match, params.Value)
+		case NotEndsWith:
+			result = !strings.HasSuffix(params.Match, params.Value)
+		case Empty:
+			result = params.Match == ""
+		case NotEmpty:
+			result = params.Match != ""
+		default:
+			return nil, errors.New("unknown comparator")
+		}
+		if !result {
+			return nil, errors.New("source string does not match given condition")
+		}
+		return utils.ReturnRaw(result), nil
+	})
 }
 
 func (f *fnString) upperCase(j json.RawMessage) (json.RawMessage, error) {
