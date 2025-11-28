@@ -315,6 +315,14 @@ func applySingleFilter(val any, filter Filter) any {
 			}
 			return string(b)
 		}
+	case "base64DecodeAsByteArray":
+		if s, ok := val.(string); ok {
+			b, err := base64.StdEncoding.DecodeString(s)
+			if err != nil {
+				return s
+			}
+			return b
+		}
 	case "base64Encode":
 		if s, ok := val.(string); ok {
 			return base64.StdEncoding.EncodeToString([]byte(s))
