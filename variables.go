@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/tidwall/gjson"
@@ -142,6 +143,69 @@ func applySingleFilter(val any, filter Filter) any {
 	switch filter.Name {
 	case "string":
 		return fmt.Sprintf("%v", val)
+	case "substring":
+		if filter.Arg == "" {
+			return val
+		}
+
+		parts := strings.Split(filter.Arg, ":")
+		// Expect 1 or 2 numeric args
+		if len(parts) == 0 || len(parts) > 2 {
+			return val
+		}
+
+		// Parse start index
+		start, err := strconv.Atoi(parts[0])
+		if err != nil {
+			return val
+		}
+
+		// Parse end index if provided
+		end := -1
+		if len(parts) == 2 && parts[1] != "" {
+			if e, err := strconv.Atoi(parts[1]); err == nil {
+				end = e
+			}
+		}
+
+		// Handle string input
+		if s, ok := val.(string); ok {
+			// fix out-of-range
+			if start < 0 {
+				start = 0
+			}
+			if start > len(s) {
+				return ""
+			}
+			if end == -1 || end > len(s) {
+				end = len(s)
+			}
+			if end < start {
+				end = start
+			}
+
+			return s[start:end]
+		}
+
+		// Handle []any input
+		if arr, ok := val.([]any); ok {
+			if start < 0 {
+				start = 0
+			}
+			if start > len(arr) {
+				return []any{}
+			}
+			if end == -1 || end > len(arr) {
+				end = len(arr)
+			}
+			if end < start {
+				end = start
+			}
+
+			return arr[start:end]
+		}
+
+		return val
 	case "join":
 		del := ","
 		if filter.Arg != "" {
