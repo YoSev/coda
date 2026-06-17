@@ -33,6 +33,7 @@ const (
 	FnCategoryHash      FnCategory = "Hash"
 	FnCategoryMath      FnCategory = "Math"
 	FnCategoryAI        FnCategory = "AI"
+	FnCategoryUtils     FnCategory = "Utils"
 )
 
 type fnHandler interface {
