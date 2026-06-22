@@ -72,6 +72,7 @@ func New(version string) *Fn {
 		&fnOs{category: FnCategoryOS},
 		&fnTime{category: FnCategoryTime},
 		&fnString{category: FnCategoryString},
+		&fnCompare{category: FnCategoryUtils},
 	}
 	for _, handler := range h {
 		handler.init(f)

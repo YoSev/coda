@@ -38,11 +38,11 @@
         "method": "GET"
       },
       "async": true,
-      "onSuccess": "kebap",
+      "onSuccess": "kebab",
       "store": "apiResponse"
     },
-    "kebap": {
-      "action": "string.kebap",
+    "kebab": {
+      "action": "string.kebab",
       "params": {
         "value": "${store.username}"
       },
@@ -216,8 +216,17 @@
         "value": 100,
         "amount": 32.123
       },
-      "onSuccess": "ioStderr",
+      "onSuccess": "compare",
       "store": "amount"
+    },
+    "compare": {
+      "action": "utils.compare",
+      "params": {
+        "left": 200,
+        "operator": "gte",
+        "right": 100
+      },
+      "onSuccess": "ioStderr"
     },
     "ioStderr": {
       "action": "io.stderr",
